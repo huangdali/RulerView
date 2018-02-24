@@ -12,7 +12,7 @@ import com.hdl.ruler.utils.DateUtils;
 public class MainActivity extends AppCompatActivity {
     private TextView tv;
     private RulerView rulerView;
-
+    private long currentTimeMillis;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onBarMoving(long currentTime) {
+                currentTimeMillis=currentTime;
                 tv.setText(DateUtils.getDateTime(currentTime));
             }
 

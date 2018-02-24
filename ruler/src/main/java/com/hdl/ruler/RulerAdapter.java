@@ -48,7 +48,7 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
 
     @Override
     public void onBindViewHolder(RulerViewHolder holder, int position) {
-        holder.view.setCurTimeIndex(position);
+        holder.view.setCurTimeIndex(position-12);
 //        TextView tv = (TextView) holder.view.findViewById(R.id.ruler_num);
 ////        ImageView imageView = (ImageView) holder.view.findViewById(R.id.ruler_img);
 //
@@ -67,7 +67,7 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
 
     @Override
     public int getItemCount() {
-        return 6*24*3;
+        return 6 * 24 + 2 * 12;
     }
 
     class RulerViewHolder extends RecyclerView.ViewHolder {
