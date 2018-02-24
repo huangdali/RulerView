@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.hdl.ruler.RulerItem
+        android:layout_width="match_parent"
+        android:layout_height="166dp"
+        android:layout_marginTop="10dp"
+        android:visibility="gone"
+        android:clipChildren="false"
+        android:clipToPadding="false" />
+
+    <com.hdl.ruler.RulerView
+        android:id="@+id/ruler_view"
+        android:layout_width="match_parent"
+        android:layout_height="166dp"
+        android:layout_centerInParent="true"
+        android:background="#1000"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+    </com.hdl.ruler.RulerView>
+
+    <TextView
+        android:id="@+id/textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/ll_function"
+        android:gravity="center"
+        android:text="时间" />
+
+    <LinearLayout
+        android:id="@+id/ll_function"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onSetAdd"
+            android:text="时间校准" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onStartMove"
+            android:text="移动" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onPuaseMove"
+            android:text="暂停" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>
