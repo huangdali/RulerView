@@ -19,6 +19,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tv = (TextView) findViewById(R.id.textview);
         rulerView = findViewById(R.id.ruler_view);
+        rulerView.setCurrentTimeMillis(System.currentTimeMillis());
+//        rulerView.startMove();
         rulerView.setOnBarMoveListener(new OnBarMoveListener() {
             @Override
             public void onDragBar(boolean isLeftDrag, long currentTime) {
@@ -33,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onBarMoveFinish(long currentTime) {
-
+                currentTimeMillis=currentTime;
+                tv.setText(DateUtils.getDateTime(currentTime));
             }
 
             @Override
@@ -59,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSetAdd(View view) {
-        rulerView.setCurrentTimeMillis(System.currentTimeMillis());
+//        rulerView.setCurrentTimeMillis(System.currentTimeMillis());
         rulerView.startMove();
     }
 
@@ -68,6 +71,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onStartMove(View view) {
+        rulerView.startMove();
+    }
+
+    public void onCurrentTime(View view) {
+        rulerView.setCurrentTimeMillis(System.currentTimeMillis());
         rulerView.startMove();
     }
 }

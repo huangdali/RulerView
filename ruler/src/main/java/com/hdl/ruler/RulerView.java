@@ -13,6 +13,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.OnBarMoveListener;
@@ -29,7 +30,7 @@ import java.util.TimerTask;
  *
  * @function 刻度尺
  */
-public class RulerView extends RecyclerView {
+public class RulerView extends RecyclerView  {
     private Context context;
     /**
      * 一天的时间
@@ -66,13 +67,27 @@ public class RulerView extends RecyclerView {
     private int centerLineColor = 0xff6e9fff;//中轴线画笔颜色
     private int centerLineWidth = CUtils.dip2px(2);
     /**
-     * 上一次滑动结束的时间
+     * 调用setCurrentTimeMillis时的时间（由于currentTimeMillis随时都在变，需要记录设置时的时间来计算是否超出当天的时间）
      */
-    private long lastScrolledTimeMillis = 0;
+    private long startTimeMillis;
+    /**
+     * 两小时
+     */
+    private static final int TWO_HOUR = 2 * 60 * 60 * 1000;
+    /**
+     * 是否是自动滑动的
+     */
+    private boolean isAutoScroll = true;
+
+    /**
+     * 左边屏幕的时刻
+     */
+    private long leftTime;
 
     public RulerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
+//        mScroller = new ScaleScroller(getContext(), this);
         if (!isInEditMode()) {
             TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.RulerView);
             setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -98,62 +113,99 @@ public class RulerView extends RecyclerView {
         mScreenWidth = displaymetrics.widthPixels;
         //中心点距离左边所占用的时长
         centerPointDuration = (int) ((mScreenWidth / 2f) / ((320.0 / (10 * 60 * 1000))));
-        //calculate value on current device
         addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+                if (isAutoScroll) {
+                    isAutoScroll = false;
+                    return;
+                }
                 View firstVisibleItem = manager.findViewByPosition(manager.findFirstVisibleItemPosition());
-                int leftScrollXCalculated = 0;
                 firstVisableItemPosition = manager.findFirstVisibleItemPosition();
-                //获取左边的屏幕的偏移量
-                leftScrollXCalculated += Math.abs(firstVisibleItem.getLeft()) + firstVisableItemPosition * 320;
-                ELog.e("hdl", "leftScrollXCalculated = " + leftScrollXCalculated);
+                //获取左屏幕的偏移量
+                int leftScrollXCalculated = Math.abs(firstVisibleItem.getLeft()) + firstVisableItemPosition * 320;
+                currentTimeMillis = (long) (DateUtils.getTodayStart(startTimeMillis) + leftScrollXCalculated / (320.0 / (10 * 60 * 1000)) + centerPointDuration) - TWO_HOUR;
                 //实时回调拖动时间
                 if (onBarMoveListener != null) {
-                    lastScrolledTimeMillis = (long) (DateUtils.getTodayStart(currentTimeMillis) + leftScrollXCalculated / (320.0 / (10 * 60 * 1000)) + centerPointDuration)- 2 * 60 * 60 * 1000;
-                    onBarMoveListener.onBarMoving(lastScrolledTimeMillis );
-                }
-                ELog.e("lastScrolledTimeMillis  = " + DateUtils.getDateTime(lastScrolledTimeMillis));
-                ELog.e("currentTimeMillis  = " + DateUtils.getDateTime(currentTimeMillis));
-                if (lastScrolledTimeMillis < DateUtils.getTodayStart(currentTimeMillis)) {
-                    ELog.e("上一天了");
-//                    setNestedScrollingEnabled(true);
-                } else if (lastScrolledTimeMillis > DateUtils.getTodayEnd(currentTimeMillis)) {
-                    ELog.e("下一天了");
-//                    setNestedScrollingEnabled(true);
-                } else {
-                    ELog.e("当天");
+                    onBarMoveListener.onBarMoving(currentTimeMillis);
                 }
             }
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if (newState == 0) {//滑动结束了
-//                    startMove();
-//                    currentTimeMillis = lastScrolledTimeMillis;
-                    if (lastScrolledTimeMillis > DateUtils.getTodayStart(currentTimeMillis) || lastScrolledTimeMillis < DateUtils.getTodayEnd(currentTimeMillis)) {
-                        //当天范围才设置当前时间
-                        setCurrentTimeMillis(lastScrolledTimeMillis);
+                if (newState == 0) {//滑动结束
+                    //1、滑动结束时，判断是否是当天的时间，如果不是则需要回退到零界点（00:00:00,23:59:59）
+                    ELog.e("currentTimeMillis = " + DateUtils.getDateTime(currentTimeMillis));
+                    isAutoScroll = true;
+                    if (currentTimeMillis < DateUtils.getTodayStart(startTimeMillis)) {
+                        ELog.e("上一天了");
+                        if (onBarMoveListener != null) {
+                            onBarMoveListener.onMoveExceedStartTime();
+                        }
+                        Toast.makeText(context, "上一天", Toast.LENGTH_SHORT).show();
+                        setCurrentTimeMillis(DateUtils.getTodayStart(startTimeMillis));
+                        toTodayStartPostion();
+                        if (onBarMoveListener != null) {
+                            onBarMoveListener.onBarMoveFinish(DateUtils.getTodayStart(startTimeMillis));
+                        }
+                    } else if (currentTimeMillis > DateUtils.getTodayEnd(startTimeMillis)) {
+                        ELog.e("下一天了 ");
+                        if (onBarMoveListener != null) {
+                            onBarMoveListener.onMoveExceedEndTime();
+                        }
+                        setCurrentTimeMillis(DateUtils.getTodayEnd(startTimeMillis));
+                        toTodayEndPostion();
+                        Toast.makeText(context, "下一天", Toast.LENGTH_SHORT).show();
+                        if (onBarMoveListener != null) {
+                            onBarMoveListener.onBarMoveFinish(DateUtils.getTodayEnd(startTimeMillis));
+                        }
+                    } else {
+                        ELog.e("当天");
+                        if (onBarMoveListener != null) {
+                            onBarMoveListener.onBarMoveFinish(currentTimeMillis);
+                        }
                     }
-                    if (onBarMoveListener != null) {
-                        onBarMoveListener.onBarMoveFinish(lastScrolledTimeMillis);
-                    }
+
                 } else {//开始滑动
                     stopMove();
                 }
             }
         });
         //默认当前时间
-        setCurrentTimeMillis(System.currentTimeMillis());
+//        setCurrentTimeMillis(System.currentTimeMillis());
+//        updateCenteLinePostion();
     }
 
     /**
-     * 左边屏幕所占用的时刻
+     * 跳转到今天的开始时间
      */
-    private long leftTime;
+    private void toTodayStartPostion() {
+        //计算偏移量
+        int offset = getOffsetByDuration(centerPointDuration);
+        manager.scrollToPositionWithOffset(2 * 6, offset);
+    }
+
+    /**
+     * 跳转到今天的开始时间
+     */
+    private void toTodayEndPostion() {
+        //计算偏移量
+        int offset = getOffsetByDuration(centerPointDuration);
+        manager.scrollToPositionWithOffset((2 + 24) * 6, offset);
+    }
+
+    /**
+     * 根据时长计算偏移量
+     *
+     * @param duration
+     * @return
+     */
+    private int getOffsetByDuration(long duration) {
+        return (int) ((320f / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(duration));
+    }
 
     /**
      * 设置当前时间
@@ -162,7 +214,19 @@ public class RulerView extends RecyclerView {
      */
     public synchronized void setCurrentTimeMillis(long currentTimeMillis) {
         this.currentTimeMillis = currentTimeMillis;
+        startTimeMillis = currentTimeMillis;
+        ELog.e(" setCurrentTimeMillis = " + DateUtils.getDateTime(currentTimeMillis));
+        updateCenteLinePostion();
+    }
+
+
+    /**
+     * 更新中心点的位置
+     */
+    public void updateCenteLinePostion() {
+        //左边屏幕的时刻
         leftTime = this.currentTimeMillis - centerPointDuration;
+        //根据左边时间计算第一个可以显示的下标
         int leftTimeIndex = DateUtils.getHour(leftTime) * 6 + DateUtils.getMinute(leftTime) / 10 + 2 * 6;
         //计算偏移量
         int offset = (int) ((320f / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(leftTime));
@@ -179,6 +243,7 @@ public class RulerView extends RecyclerView {
      * 开始移动
      */
     public void startMove() {
+        isAutoScroll = true;
         if (moveTimer != null) {
             moveTimer.cancel();
             moveTimer = null;
@@ -191,11 +256,15 @@ public class RulerView extends RecyclerView {
                 post(new Runnable() {
                     @Override
                     public void run() {
+                        isAutoScroll = true;
                         if (onBarMoveListener != null) {
-                            onBarMoveListener.onBarMoving(getCurrentTimeMillis());
+                            onBarMoveListener.onBarMoving(currentTimeMillis);
                         }
                         currentTimeMillis += 1000;
-                        setCurrentTimeMillis(currentTimeMillis);
+                        ELog.e("currentTimeMillis = " + currentTimeMillis);
+                        ELog.e("当前时间：" + DateUtils.getDateTime(currentTimeMillis));
+                        updateCenteLinePostion();
+//                        setCurrentTimeMillis(currentTimeMillis);
                     }
                 });
             }
@@ -206,6 +275,7 @@ public class RulerView extends RecyclerView {
      * 结束移动
      */
     public void stopMove() {
+        isAutoScroll = true;
         if (moveTimer != null) {
             moveTimer.cancel();
         }
@@ -256,6 +326,6 @@ public class RulerView extends RecyclerView {
      * @return
      */
     public long getCurrentTimeMillis() {
-        return currentTimeMillis - 2 * 60 * 60 * 1000;
+        return currentTimeMillis;
     }
 }

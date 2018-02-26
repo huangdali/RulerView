@@ -4,13 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.hdl.ruler.RulerItem
+    <com.hdl.ruler.RulerItemView
         android:layout_width="match_parent"
         android:layout_height="166dp"
         android:layout_marginTop="10dp"
-        android:visibility="gone"
         android:clipChildren="false"
-        android:clipToPadding="false" />
+        android:clipToPadding="false"
+        android:visibility="gone" />
 
     <com.hdl.ruler.RulerView
         android:id="@+id/ruler_view"
@@ -41,7 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onSetAdd"
-            android:text="时间校准" />
+            android:text="播放" />
 
         <Button
             android:layout_width="wrap_content"
@@ -54,6 +54,12 @@
             android:layout_height="wrap_content"
             android:onClick="onPuaseMove"
             android:text="暂停" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onCurrentTime"
+            android:text="当前时间" />
 
     </LinearLayout>
 

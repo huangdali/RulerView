@@ -18,7 +18,7 @@ import com.hdl.ruler.utils.DateUtils;
  * @author HDL
  */
 
-public class RulerItem extends View {
+public class RulerItemView extends View {
     /**
      * 刻度配置
      */
@@ -73,15 +73,15 @@ public class RulerItem extends View {
 
     private int viewHeight = CUtils.dip2px(120);
 
-    public RulerItem(Context context) {
+    public RulerItemView(Context context) {
         this(context, null);
     }
 
-    public RulerItem(Context context, AttributeSet attrs) {
+    public RulerItemView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RulerItem(Context context, AttributeSet attrs, int defStyle) {
+    public RulerItemView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         initPaint();
     }
