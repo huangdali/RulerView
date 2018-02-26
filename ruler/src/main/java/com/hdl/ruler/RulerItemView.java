@@ -127,9 +127,9 @@ public class RulerItemView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawUpAndDownLine(canvas);
-        int viewWidth = getWidth();
-        int itemWidth = viewWidth / 10;
-        int rightX = 0;
+        float viewWidth = getWidth();
+        float itemWidth = viewWidth / 10f;
+        float rightX = 0;
         for (int i = 0; i < 60; i++) {
             if (i == 0 || i == 59) {
                 //画上面的大刻度

@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -30,7 +31,7 @@ import java.util.TimerTask;
  *
  * @function 刻度尺
  */
-public class RulerView extends RecyclerView  {
+public class RulerView extends RecyclerView {
     private Context context;
     /**
      * 一天的时间
@@ -83,6 +84,7 @@ public class RulerView extends RecyclerView  {
      * 左边屏幕的时刻
      */
     private long leftTime;
+    private RulerAdapter adapter;
 
     public RulerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -96,12 +98,17 @@ public class RulerView extends RecyclerView  {
         }
     }
 
+    private boolean isDouble;
+    private int lastX;
+    private boolean isCanScroll;
+    private float beforeLength, afterLenght, mScale;
+
     private void init(final Context context) {
         initPaint();
         manager = new LinearLayoutManager(context);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         setLayoutManager(manager);
-        RulerAdapter adapter = new RulerAdapter(context);
+        adapter = new RulerAdapter(context);
         setAdapter(adapter);
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
@@ -112,7 +119,7 @@ public class RulerView extends RecyclerView  {
         windowManager.getDefaultDisplay().getMetrics(displaymetrics);
         mScreenWidth = displaymetrics.widthPixels;
         //中心点距离左边所占用的时长
-        centerPointDuration = (int) ((mScreenWidth / 2f) / ((320.0 / (10 * 60 * 1000))));
+        centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
         addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
@@ -125,8 +132,8 @@ public class RulerView extends RecyclerView  {
                 View firstVisibleItem = manager.findViewByPosition(manager.findFirstVisibleItemPosition());
                 firstVisableItemPosition = manager.findFirstVisibleItemPosition();
                 //获取左屏幕的偏移量
-                int leftScrollXCalculated = Math.abs(firstVisibleItem.getLeft()) + firstVisableItemPosition * 320;
-                currentTimeMillis = (long) (DateUtils.getTodayStart(startTimeMillis) + leftScrollXCalculated / (320.0 / (10 * 60 * 1000)) + centerPointDuration) - TWO_HOUR;
+                int leftScrollXCalculated = (int) (Math.abs(firstVisibleItem.getLeft()) + firstVisableItemPosition * (320 + zoom));
+                currentTimeMillis = (long) (DateUtils.getTodayStart(startTimeMillis) + leftScrollXCalculated / ((320.0 + zoom) / (10 * 60 * 1000)) + centerPointDuration) - TWO_HOUR;
                 //实时回调拖动时间
                 if (onBarMoveListener != null) {
                     onBarMoveListener.onBarMoving(currentTimeMillis);
@@ -174,11 +181,70 @@ public class RulerView extends RecyclerView  {
                 }
             }
         });
-        //默认当前时间
-//        setCurrentTimeMillis(System.currentTimeMillis());
-//        updateCenteLinePostion();
+        setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                    ELog.e("单指按下");
+                    isDouble = false;
+                    lastX = (int) event.getX();
+                } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    if (event.getPointerCount() == 2 && isDouble) {
+//                        ELog.e("双指移动");
+                        isCanScroll = false;//不能在拖动
+                        afterLenght = getDistance(event);// 获取两点的距离
+                        if (beforeLength == 0) {
+                            beforeLength = afterLenght;
+                        }
+                        float gapLenght = afterLenght - beforeLength;// 变化的长度
+                        if (Math.abs(gapLenght) > 5f) {
+                            mScale = afterLenght / beforeLength;// 求的缩放的比例
+//                    listener.onZoom(mScale, time);
+//                            ELog.e("双指缩放了mScale = " + mScale);
+                            if (mScale > 1) {
+//                                zoom += CUtils.dip2px(2);
+                                zoom +=10;
+                            } else {
+                                zoom -=10;
+                            }
+                            isAutoScroll = false;
+                            centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
+                            adapter.setZoom(zoom);
+                            setCurrentTimeMillis(lastTimeMillis);
+                            beforeLength = afterLenght;
+                        }
+                    }
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (isDouble) {
+                        isAutoScroll = false;
+                        ELog.e("双指抬起");
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                isCanScroll = true;//1秒之后才能继续拖动
+                            }
+                        }, 500);
+//                listener.onZoomFinished();
+                    }
+                } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN) {
+                    if (event.getPointerCount() == 2) {
+//                        ELog.e("双指按下");
+                        lastTimeMillis=getCurrentTimeMillis();
+                        beforeLength = getDistance(event);
+                        isDouble = true;
+                        isAutoScroll = false;
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
-
+    private long lastTimeMillis;
+    /**
+     * 刻度缩放值
+     */
+    private float zoom;
     /**
      * 跳转到今天的开始时间
      */
@@ -204,7 +270,17 @@ public class RulerView extends RecyclerView  {
      * @return
      */
     private int getOffsetByDuration(long duration) {
-        return (int) ((320f / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(duration));
+        return (int) (((320f + zoom) / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(duration));
+    }
+
+    /**
+     * 计算两点的距离
+     **/
+    private float getDistance(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+
+        return (float) Math.sqrt(x * x + y * y);
     }
 
     /**
@@ -229,9 +305,9 @@ public class RulerView extends RecyclerView  {
         //根据左边时间计算第一个可以显示的下标
         int leftTimeIndex = DateUtils.getHour(leftTime) * 6 + DateUtils.getMinute(leftTime) / 10 + 2 * 6;
         //计算偏移量
-        int offset = (int) ((320f / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(leftTime));
+        int offset = (int) (((320f + zoom) / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(leftTime));
         //滑动到指定的item并设置偏移量(offset不能超过320px)
-        manager.scrollToPositionWithOffset(leftTimeIndex, -offset % 320);
+        manager.scrollToPositionWithOffset(leftTimeIndex, (int) (-offset % (320 + zoom)));
     }
 
     /**

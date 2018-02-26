@@ -53,7 +53,8 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
 //        ELog.e("刷新ITEM了");
         holder.view.setCurTimeIndex(position - 12);
         View view = holder.parentView;
-        view.setLayoutParams(new RecyclerView.LayoutParams((int) (320+zoom), RecyclerView.LayoutParams.MATCH_PARENT));
+        view.setLayoutParams(new RecyclerView.LayoutParams((int) (320+zoom), RecyclerView.LayoutParams.WRAP_CONTENT));
+        holder.view.postInvalidate();
 //        TextView tv = (TextView) holder.view.findViewById(R.id.ruler_num);
 ////        ImageView imageView = (ImageView) holder.view.findViewById(R.id.ruler_img);
 //
