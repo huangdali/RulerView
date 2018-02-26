@@ -9,6 +9,8 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.hdl.elog.ELog;
+import com.hdl.ruler.bean.ScaleMode;
 import com.hdl.ruler.utils.CUtils;
 import com.hdl.ruler.utils.DateUtils;
 
@@ -86,6 +88,16 @@ public class RulerItemView extends View {
         initPaint();
     }
 
+    private ScaleMode scaleMode;
+
+    public ScaleMode getScaleMode() {
+        return scaleMode;
+    }
+
+    public void setScaleMode(ScaleMode scaleMode) {
+        this.scaleMode = scaleMode;
+    }
+
     /**
      * 初始化画笔
      */
@@ -127,6 +139,16 @@ public class RulerItemView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawUpAndDownLine(canvas);
+        drawRuler(canvas);
+    }
+
+    /**
+     * 画刻度尺
+     *
+     * @param canvas
+     */
+    private void drawRuler(Canvas canvas) {
+        ELog.e("当前模式 " + scaleMode);
         float viewWidth = getWidth();
         float itemWidth = viewWidth / 10f;
         float rightX = 0;

@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import com.hdl.elog.ELog;
+import com.hdl.ruler.bean.ScaleMode;
 
 
 /**
@@ -52,8 +53,9 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
     public void onBindViewHolder(RulerViewHolder holder, int position) {
 //        ELog.e("刷新ITEM了");
         holder.view.setCurTimeIndex(position - 12);
+        holder.view.setScaleMode(scaleMode);
         View view = holder.parentView;
-        view.setLayoutParams(new RecyclerView.LayoutParams((int) (320+zoom), RecyclerView.LayoutParams.WRAP_CONTENT));
+        view.setLayoutParams(new RecyclerView.LayoutParams((int) (320 + zoom), RecyclerView.LayoutParams.WRAP_CONTENT));
         holder.view.postInvalidate();
 //        TextView tv = (TextView) holder.view.findViewById(R.id.ruler_num);
 ////        ImageView imageView = (ImageView) holder.view.findViewById(R.id.ruler_img);
@@ -97,6 +99,13 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
     public void setZoom(float zoom) {
         this.zoom = zoom;
         ELog.e("设置缩放值 zoom = " + zoom);
+        notifyDataSetChanged();
+    }
+
+    private ScaleMode scaleMode = ScaleMode.KEY_MINUTE;
+
+    public void setScaleMode(ScaleMode scaleMode) {
+        this.scaleMode = scaleMode;
         notifyDataSetChanged();
     }
 }

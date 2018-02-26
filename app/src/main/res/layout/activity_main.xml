@@ -27,7 +27,7 @@
         android:id="@+id/textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/ll_function"
+        android:layout_above="@+id/ll_function1"
         android:gravity="center"
         android:text="时间" />
 
@@ -63,5 +63,18 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/ll_function1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/ll_function"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onScollSwitch"
+            android:text="滑动开关" />
+    </LinearLayout>
 
 </RelativeLayout>

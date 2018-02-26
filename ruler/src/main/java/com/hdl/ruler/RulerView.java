@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.OnBarMoveListener;
+import com.hdl.ruler.bean.ScaleMode;
 import com.hdl.ruler.utils.CUtils;
 import com.hdl.ruler.utils.DateUtils;
 
@@ -48,7 +49,7 @@ public class RulerView extends RecyclerView {
     /**
      * 线性布局
      */
-    private LinearLayoutManager manager;
+    private MyLinearLayoutManager manager;
     /**
      * 屏幕的宽度
      */
@@ -84,11 +85,19 @@ public class RulerView extends RecyclerView {
      * 左边屏幕的时刻
      */
     private long leftTime;
+    /**
+     * 适配器
+     */
     private RulerAdapter adapter;
+    /**
+     * 缩放模式
+     */
+    private ScaleMode scaleMode = ScaleMode.KEY_MINUTE;
 
     public RulerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
+//        setNestedScrollingEnabled(false);
 //        mScroller = new ScaleScroller(getContext(), this);
         if (!isInEditMode()) {
             TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.RulerView);
@@ -99,14 +108,41 @@ public class RulerView extends RecyclerView {
     }
 
     private boolean isDouble;
-    private int lastX;
-    private boolean isCanScroll;
     private float beforeLength, afterLenght, mScale;
+
+    private class MyLinearLayoutManager extends LinearLayoutManager {
+        private boolean iscanScrollHorizontally = true;
+
+        public MyLinearLayoutManager(Context context) {
+            super(context);
+        }
+
+        @Override
+        public boolean canScrollHorizontally() {
+            return iscanScrollHorizontally;
+        }
+
+        public void setIscanScrollHorizontally(boolean iscanScrollHorizontally) {
+            this.iscanScrollHorizontally = iscanScrollHorizontally;
+        }
+    }
+
+    /**
+     * 设置是否可以滑动
+     *
+     * @param isCanScrollBar
+     */
+    public void setIsCanScrollBar(boolean isCanScrollBar) {
+        if (manager != null) {
+            manager.setIscanScrollHorizontally(isCanScrollBar);
+        }
+    }
 
     private void init(final Context context) {
         initPaint();
-        manager = new LinearLayoutManager(context);
+        manager = new MyLinearLayoutManager(context);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+
         setLayoutManager(manager);
         adapter = new RulerAdapter(context);
         setAdapter(adapter);
@@ -187,11 +223,9 @@ public class RulerView extends RecyclerView {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
 //                    ELog.e("单指按下");
                     isDouble = false;
-                    lastX = (int) event.getX();
                 } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     if (event.getPointerCount() == 2 && isDouble) {
 //                        ELog.e("双指移动");
-                        isCanScroll = false;//不能在拖动
                         afterLenght = getDistance(event);// 获取两点的距离
                         if (beforeLength == 0) {
                             beforeLength = afterLenght;
@@ -199,19 +233,10 @@ public class RulerView extends RecyclerView {
                         float gapLenght = afterLenght - beforeLength;// 变化的长度
                         if (Math.abs(gapLenght) > 5f) {
                             mScale = afterLenght / beforeLength;// 求的缩放的比例
-//                    listener.onZoom(mScale, time);
+//                    listener.onZooming(mScale, time);
 //                            ELog.e("双指缩放了mScale = " + mScale);
-                            if (mScale > 1) {
-//                                zoom += CUtils.dip2px(2);
-                                zoom +=10;
-                            } else {
-                                zoom -=10;
-                            }
-                            isAutoScroll = false;
-                            centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
-                            adapter.setZoom(zoom);
-                            setCurrentTimeMillis(lastTimeMillis);
                             beforeLength = afterLenght;
+                            onZooming();
                         }
                     }
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -221,15 +246,20 @@ public class RulerView extends RecyclerView {
                         new Timer().schedule(new TimerTask() {
                             @Override
                             public void run() {
-                                isCanScroll = true;//1秒之后才能继续拖动
+                                post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        setIsCanScrollBar(true);//双指抬起的时候，需要解除静止滑动
+                                    }
+                                });
                             }
-                        }, 500);
-//                listener.onZoomFinished();
+                        }, 100);
                     }
                 } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN) {
                     if (event.getPointerCount() == 2) {
-//                        ELog.e("双指按下");
-                        lastTimeMillis=getCurrentTimeMillis();
+                        ELog.e("双指按下");
+                        setIsCanScrollBar(false);//双指按下的时候，需要静止滑动
+                        lastTimeMillis = getCurrentTimeMillis();
                         beforeLength = getDistance(event);
                         isDouble = true;
                         isAutoScroll = false;
@@ -240,11 +270,41 @@ public class RulerView extends RecyclerView {
             }
         });
     }
+
+    /**
+     * 缩放中
+     */
+    private void onZooming() {
+        if (mScale > 1) {
+            zoom += CUtils.dip2px(4.5f);
+        } else {
+            zoom -= CUtils.dip2px(4.5f);
+        }
+        if (zoom < -320 / 2) {
+            scaleMode = ScaleMode.KEY_HOUSE;
+            adapter.setScaleMode(scaleMode);
+//            Toast.makeText(context, "已经是最小刻度", Toast.LENGTH_SHORT).show();
+        } else if (zoom < 320 * 2) {
+            isAutoScroll = false;
+            centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
+            adapter.setZoom(zoom);
+            setCurrentTimeMillis(lastTimeMillis);
+        } else {
+            zoom = 320 * 2;
+            Toast.makeText(context, "已经是最大刻度", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * 记录缩放前的时间
+     */
     private long lastTimeMillis;
+
     /**
      * 刻度缩放值
      */
     private float zoom;
+
     /**
      * 跳转到今天的开始时间
      */
