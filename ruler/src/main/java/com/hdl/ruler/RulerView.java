@@ -75,7 +75,7 @@ public class RulerView extends RecyclerView {
     /**
      * 两小时
      */
-    private static final int TWO_HOUR = 2 * 60 * 60 * 1000;
+    private static final int TWO_HOUR = 12 * 60 * 60 * 1000;
     /**
      * 是否是自动滑动的
      */
@@ -166,6 +166,9 @@ public class RulerView extends RecyclerView {
                     return;
                 }
                 View firstVisibleItem = manager.findViewByPosition(manager.findFirstVisibleItemPosition());
+                if (firstVisibleItem == null) {
+                    return;
+                }
                 firstVisableItemPosition = manager.findFirstVisibleItemPosition();
                 //获取左屏幕的偏移量
                 int leftScrollXCalculated = (int) (Math.abs(firstVisibleItem.getLeft()) + firstVisableItemPosition * (320 + zoom));
@@ -276,23 +279,31 @@ public class RulerView extends RecyclerView {
      */
     private void onZooming() {
         if (mScale > 1) {
-            zoom += CUtils.dip2px(4.5f);
+            zoom += 30;
         } else {
-            zoom -= CUtils.dip2px(4.5f);
+            zoom -= 30;
         }
         if (zoom < -320 / 2) {
             scaleMode = ScaleMode.KEY_HOUSE;
-            adapter.setScaleMode(scaleMode);
-//            Toast.makeText(context, "已经是最小刻度", Toast.LENGTH_SHORT).show();
-        } else if (zoom < 320 * 2) {
+            ELog.e("小时级别了zoom = " + zoom);
+            if (Math.abs(320 + zoom) < 30) {//不能小于10dp
+                ELog.e("强制设置为小时级别的");
+                zoom = -320 + 30;
+            }
+        } else if (zoom < 320 * 1.5) {//不能超过1.5倍
+            scaleMode = ScaleMode.KEY_MINUTE;
             isAutoScroll = false;
-            centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
-            adapter.setZoom(zoom);
-            setCurrentTimeMillis(lastTimeMillis);
+            ELog.e("分钟级别了zoom = " + zoom);
         } else {
-            zoom = 320 * 2;
-            Toast.makeText(context, "已经是最大刻度", Toast.LENGTH_SHORT).show();
+            scaleMode = ScaleMode.KEY_MINUTE;
+            zoom = 320 * 1.5f;
+//            Toast.makeText(context, "已经是最大刻度", Toast.LENGTH_SHORT).show();
+            ELog.e("超过分钟级别了zoom = " + zoom);
         }
+        centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
+        setCurrentTimeMillis(lastTimeMillis);
+        adapter.setZoom(zoom);
+        adapter.setScaleMode(scaleMode);
     }
 
     /**
@@ -311,7 +322,7 @@ public class RulerView extends RecyclerView {
     private void toTodayStartPostion() {
         //计算偏移量
         int offset = getOffsetByDuration(centerPointDuration);
-        manager.scrollToPositionWithOffset(2 * 6, offset);
+        manager.scrollToPositionWithOffset(12 * 6, offset);
     }
 
     /**
@@ -320,7 +331,7 @@ public class RulerView extends RecyclerView {
     private void toTodayEndPostion() {
         //计算偏移量
         int offset = getOffsetByDuration(centerPointDuration);
-        manager.scrollToPositionWithOffset((2 + 24) * 6, offset);
+        manager.scrollToPositionWithOffset((12 + 24) * 6, offset);
     }
 
     /**
@@ -330,7 +341,7 @@ public class RulerView extends RecyclerView {
      * @return
      */
     private int getOffsetByDuration(long duration) {
-        return (int) (((320f + zoom) / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(duration));
+        return (int) (((320f + zoom) / (10 * 60 * 1000)) * duration);
     }
 
     /**
@@ -339,7 +350,6 @@ public class RulerView extends RecyclerView {
     private float getDistance(MotionEvent event) {
         float x = event.getX(0) - event.getX(1);
         float y = event.getY(0) - event.getY(1);
-
         return (float) Math.sqrt(x * x + y * y);
     }
 
@@ -363,7 +373,7 @@ public class RulerView extends RecyclerView {
         //左边屏幕的时刻
         leftTime = this.currentTimeMillis - centerPointDuration;
         //根据左边时间计算第一个可以显示的下标
-        int leftTimeIndex = DateUtils.getHour(leftTime) * 6 + DateUtils.getMinute(leftTime) / 10 + 2 * 6;
+        int leftTimeIndex = DateUtils.getHour(leftTime) * 6 + DateUtils.getMinute(leftTime) / 10 + 12 * 6;
         //计算偏移量
         int offset = (int) (((320f + zoom) / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(leftTime));
         //滑动到指定的item并设置偏移量(offset不能超过320px)

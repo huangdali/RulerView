@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.ScaleMode;
 
 
@@ -52,10 +51,22 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
     @Override
     public void onBindViewHolder(RulerViewHolder holder, int position) {
 //        ELog.e("刷新ITEM了");
-        holder.view.setCurTimeIndex(position - 12);
-        holder.view.setScaleMode(scaleMode);
+        int itemWidth = (int) (320 + zoom);
+        holder.view.setCurTimeIndex(position - 12*6);
+//        if (holder.view.getScaleMode() != scaleMode) {
+//            if (scaleMode == ScaleMode.KEY_HOUSE) {//变成小时级别的时候，需要将整体宽度变窄
+////                itemWidth = (int) (320f + zoom - 100);
+//                itemWidth=50;
+//            }
+            holder.view.setScaleMode(scaleMode);
+//        }
+//        if (holder.view.getScaleMode() == ScaleMode.KEY_HOUSE) {
+//            ELog.e("统一设置成25了");
+//            itemWidth = 25;
+//        }
         View view = holder.parentView;
-        view.setLayoutParams(new RecyclerView.LayoutParams((int) (320 + zoom), RecyclerView.LayoutParams.WRAP_CONTENT));
+//        ELog.e("320 + zoom = "+(320 + zoom));
+        view.setLayoutParams(new RecyclerView.LayoutParams(itemWidth, RecyclerView.LayoutParams.WRAP_CONTENT));
         holder.view.postInvalidate();
 //        TextView tv = (TextView) holder.view.findViewById(R.id.ruler_num);
 ////        ImageView imageView = (ImageView) holder.view.findViewById(R.id.ruler_img);
@@ -75,7 +86,7 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
 
     @Override
     public int getItemCount() {
-        return 6 * 24 + 2 * 12;
+        return 6*48;
     }
 
     class RulerViewHolder extends RecyclerView.ViewHolder {
@@ -98,7 +109,7 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
      */
     public void setZoom(float zoom) {
         this.zoom = zoom;
-        ELog.e("设置缩放值 zoom = " + zoom);
+//        ELog.e("设置缩放值 zoom = " + zoom);
         notifyDataSetChanged();
     }
 
