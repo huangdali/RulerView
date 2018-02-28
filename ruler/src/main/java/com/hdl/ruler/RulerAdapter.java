@@ -10,6 +10,10 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import com.hdl.ruler.bean.ScaleMode;
+import com.hdl.ruler.bean.TimeSlot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -52,13 +56,14 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
     public void onBindViewHolder(RulerViewHolder holder, int position) {
 //        ELog.e("刷新ITEM了");
         int itemWidth = (int) (320 + zoom);
-        holder.view.setCurTimeIndex(position - 12*6);
+        holder.view.setCurTimeIndex(position - 12 * 6);
 //        if (holder.view.getScaleMode() != scaleMode) {
 //            if (scaleMode == ScaleMode.KEY_HOUSE) {//变成小时级别的时候，需要将整体宽度变窄
 ////                itemWidth = (int) (320f + zoom - 100);
 //                itemWidth=50;
 //            }
-            holder.view.setScaleMode(scaleMode);
+        holder.view.setScaleMode(scaleMode);
+        holder.view.setVedioTimeSlot(vedioTimeSlot);
 //        }
 //        if (holder.view.getScaleMode() == ScaleMode.KEY_HOUSE) {
 //            ELog.e("统一设置成25了");
@@ -86,8 +91,34 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
 
     @Override
     public int getItemCount() {
-        return 6*48;
+        return 6 * 48;
     }
+
+    /**
+     * 视频时间段集合
+     */
+    private List<TimeSlot> vedioTimeSlot = new ArrayList<>();
+
+    /**
+     * 获取视频时间段
+     *
+     * @return
+     */
+    public List<TimeSlot> getVedioTimeSlot() {
+        return vedioTimeSlot;
+    }
+
+    /**
+     * 设置视频时间段
+     *
+     * @param vedioTimeSlot
+     */
+    public void setVedioTimeSlot(List<TimeSlot> vedioTimeSlot) {
+        this.vedioTimeSlot.clear();
+        this.vedioTimeSlot.addAll(vedioTimeSlot);
+        notifyDataSetChanged();
+    }
+
 
     class RulerViewHolder extends RecyclerView.ViewHolder {
         private RulerItemView view;

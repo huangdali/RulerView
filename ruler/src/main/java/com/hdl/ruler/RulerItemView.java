@@ -10,8 +10,12 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.hdl.ruler.bean.ScaleMode;
+import com.hdl.ruler.bean.TimeSlot;
 import com.hdl.ruler.utils.CUtils;
 import com.hdl.ruler.utils.DateUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by HDL on 2018/2/7.
@@ -157,6 +161,42 @@ public class RulerItemView extends View {
         super.onDraw(canvas);
         drawUpAndDownLine(canvas);
         drawRuler(canvas);
+        drawVedioArea(canvas);
+    }
+
+    /**
+     * 画视频区域
+     *
+     * @param canvas
+     */
+    private void drawVedioArea(Canvas canvas) {
+        for (TimeSlot timeSlot : vedioTimeSlot) {
+            //1、首先判断是否全部包含了本时间段
+            boolean isContainTime = DateUtils.isContainTime(timeSlot, timeIndex * 60 * 1000, timeIndex * 60 * 1000 + 10 * 60 * 1000);
+            boolean isLeftTime = DateUtils.isCurrentTimeArea(timeSlot.getStartTimeMillis(), timeIndex * 60 * 1000, timeIndex * 60 * 1000 + 10 * 60 * 1000);
+            boolean isRightTime = DateUtils.isCurrentTimeArea(timeSlot.getEndTimeMillis(), timeIndex * 60 * 1000, timeIndex * 60 * 1000 + 10 * 60 * 1000);
+            if (isContainTime) {//包含所有（画整个item）
+                vedioAreaRect.set(0, 0, getWidth(), viewHeight);
+                canvas.drawRect(vedioAreaRect, vedioAreaPaint);
+                return;
+            } else if (isLeftTime && isRightTime) {//两端都在（画左边时刻到右边时刻）
+                float distanceX1 = (timeSlot.getStartTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
+                float distanceX2 = (timeSlot.getEndTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
+                vedioAreaRect.set(distanceX1, 0, distanceX2, viewHeight);
+                canvas.drawRect(vedioAreaRect, vedioAreaPaint);
+                return;
+            } else if (isLeftTime) {//只有左边在（左边时刻开始到item结束都画）
+                float distanceX = (timeSlot.getStartTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
+                vedioAreaRect.set(distanceX, 0, getWidth(), viewHeight);
+                canvas.drawRect(vedioAreaRect, vedioAreaPaint);
+                return;
+            } else if (isRightTime) {//只有右边在（画从头开始到右边时刻）
+                float distanceX = (timeSlot.getEndTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
+                vedioAreaRect.set(0, 0, distanceX, viewHeight);
+                canvas.drawRect(vedioAreaRect, vedioAreaPaint);
+                return;
+            }
+        }
     }
 
     /**
@@ -177,7 +217,7 @@ public class RulerItemView extends View {
                 canvas.drawLine(0, viewHeight, 0, viewHeight - rulerHeightSamll * 2, largeRulerPaint);
                 float timeStrWidth = keyTickTextPaint.measureText(DateUtils.getHourMinute(timeIndex));
 //                canvas.drawText(DateUtils.getHourMinute(timeIndex), timeStrWidth + rulerWidthSamll, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
-                canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth/2, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
+                canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth / 2, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
             } else {//小刻度
                 //画上面的小刻度
                 canvas.drawLine(0, 0, 0, rulerHeightSamll, smallRulerPaint);
@@ -196,7 +236,7 @@ public class RulerItemView extends View {
                     rightX += itemWidth;
                     if (i == 0) {
                         float timeStrWidth = keyTickTextPaint.measureText(DateUtils.getHourMinute(timeIndex));
-                        canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth/2, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
+                        canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth / 2, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
 //                        canvas.drawText(DateUtils.getHourMinute(timeIndex), rightX - timeStrWidth + rulerWidthSamll, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
                     }
 //                    else {
@@ -237,4 +277,28 @@ public class RulerItemView extends View {
     }
 
     private int timeIndex;
+    /**
+     * 视频时间段集合
+     */
+    private List<TimeSlot> vedioTimeSlot = new ArrayList<>();
+
+    /**
+     * 获取视频时间段
+     *
+     * @return
+     */
+    public List<TimeSlot> getVedioTimeSlot() {
+        return vedioTimeSlot;
+    }
+
+    /**
+     * 设置视频时间段
+     *
+     * @param vedioTimeSlot
+     */
+    public void setVedioTimeSlot(List<TimeSlot> vedioTimeSlot) {
+        this.vedioTimeSlot.clear();
+        this.vedioTimeSlot.addAll(vedioTimeSlot);
+        postInvalidate();//重绘
+    }
 }

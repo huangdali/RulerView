@@ -19,9 +19,12 @@ import android.widget.Toast;
 import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.OnBarMoveListener;
 import com.hdl.ruler.bean.ScaleMode;
+import com.hdl.ruler.bean.TimeSlot;
 import com.hdl.ruler.utils.CUtils;
 import com.hdl.ruler.utils.DateUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -245,7 +248,7 @@ public class RulerView extends RecyclerView {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (isDouble) {
                         isAutoScroll = false;
-                        ELog.e("双指抬起");
+//                        ELog.e("双指抬起");
                         new Timer().schedule(new TimerTask() {
                             @Override
                             public void run() {
@@ -260,7 +263,7 @@ public class RulerView extends RecyclerView {
                     }
                 } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN) {
                     if (event.getPointerCount() == 2) {
-                        ELog.e("双指按下");
+//                        ELog.e("双指按下");
                         setIsCanScrollBar(false);//双指按下的时候，需要静止滑动
                         lastTimeMillis = getCurrentTimeMillis();
                         beforeLength = getDistance(event);
@@ -275,6 +278,32 @@ public class RulerView extends RecyclerView {
     }
 
     /**
+     * 视频时间段集合
+     */
+    private List<TimeSlot> vedioTimeSlot = new ArrayList<>();
+
+    /**
+     * 获取视频时间段
+     *
+     * @return
+     */
+    public List<TimeSlot> getVedioTimeSlot() {
+        return vedioTimeSlot;
+    }
+
+    /**
+     * 设置视频时间段
+     *
+     * @param vedioTimeSlot
+     */
+    public void setVedioTimeSlot(List<TimeSlot> vedioTimeSlot) {
+        this.vedioTimeSlot.clear();
+        this.vedioTimeSlot.addAll(vedioTimeSlot);
+//        postInvalidate();//重绘
+        adapter.setVedioTimeSlot(vedioTimeSlot);
+    }
+
+    /**
      * 缩放中
      */
     private void onZooming() {
@@ -285,20 +314,20 @@ public class RulerView extends RecyclerView {
         }
         if (zoom < -320 / 2) {
             scaleMode = ScaleMode.KEY_HOUSE;
-            ELog.e("小时级别了zoom = " + zoom);
+//            ELog.e("小时级别了zoom = " + zoom);
             if (Math.abs(320 + zoom) < 30) {//不能小于10dp
-                ELog.e("强制设置为小时级别的");
+//                ELog.e("强制设置为小时级别的");
                 zoom = -320 + 30;
             }
         } else if (zoom < 320 * 1.5) {//不能超过1.5倍
             scaleMode = ScaleMode.KEY_MINUTE;
             isAutoScroll = false;
-            ELog.e("分钟级别了zoom = " + zoom);
+//            ELog.e("分钟级别了zoom = " + zoom);
         } else {
             scaleMode = ScaleMode.KEY_MINUTE;
             zoom = 320 * 1.5f;
 //            Toast.makeText(context, "已经是最大刻度", Toast.LENGTH_SHORT).show();
-            ELog.e("超过分钟级别了zoom = " + zoom);
+//            ELog.e("超过分钟级别了zoom = " + zoom);
         }
         centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
         setCurrentTimeMillis(lastTimeMillis);
@@ -361,7 +390,7 @@ public class RulerView extends RecyclerView {
     public synchronized void setCurrentTimeMillis(long currentTimeMillis) {
         this.currentTimeMillis = currentTimeMillis;
         startTimeMillis = currentTimeMillis;
-        ELog.e(" setCurrentTimeMillis = " + DateUtils.getDateTime(currentTimeMillis));
+//        ELog.e(" setCurrentTimeMillis = " + DateUtils.getDateTime(currentTimeMillis));
         updateCenteLinePostion();
     }
 
@@ -445,6 +474,11 @@ public class RulerView extends RecyclerView {
     public void draw(Canvas c) {
         super.draw(c);
         drawCenterLine(c);
+        drawSelectTimeArea(c);
+    }
+
+    private void drawSelectTimeArea(Canvas c) {
+
     }
 
 
@@ -473,5 +507,34 @@ public class RulerView extends RecyclerView {
      */
     public long getCurrentTimeMillis() {
         return currentTimeMillis;
+    }
+
+    /**
+     * 是否选择时间模式
+     */
+    private boolean isSelectTimeArea;
+
+    public boolean isSelectTimeArea() {
+        return isSelectTimeArea;
+    }
+
+    /**
+     * 设置是否选择时间区域
+     *
+     * @param selectTimeArea
+     */
+    public void setSelectTimeArea(boolean selectTimeArea) {
+        this.isSelectTimeArea = selectTimeArea;
+        if (selectTimeArea) {//选择的时候需要停止选择
+            if (scaleMode == ScaleMode.KEY_HOUSE) {
+                scaleMode = ScaleMode.KEY_MINUTE;//要恢复到分钟模式，否则刻度精度太高无法选择
+                zoom = 300;
+                centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
+                setCurrentTimeMillis(lastTimeMillis);
+                adapter.setZoom(zoom);
+                adapter.setScaleMode(scaleMode);
+            }
+        }
+        setIsCanScrollBar(!isSelectTimeArea);//选择时间时不能滑动
     }
 }
