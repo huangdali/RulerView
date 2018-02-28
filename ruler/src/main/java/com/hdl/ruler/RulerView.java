@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 
 import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.OnBarMoveListener;
+import com.hdl.ruler.bean.OnSelectedTimeListener;
 import com.hdl.ruler.bean.ScaleMode;
 import com.hdl.ruler.bean.TimeSlot;
 import com.hdl.ruler.utils.CUtils;
@@ -71,6 +73,20 @@ public class RulerView extends RecyclerView {
     private Paint centerLinePaint = new Paint();
     private int centerLineColor = 0xff6e9fff;//中轴线画笔颜色
     private int centerLineWidth = CUtils.dip2px(2);
+    /**
+     * 选择时间配置
+     */
+    private Paint selectAreaPaint = new Paint();//选择时间边框
+    private int selectTimeBorderColor = 0xfffabb64;//边框颜色
+    private Paint vedioArea = new Paint();//已选时间
+    private int selectTimeAreaColor = 0x44fabb64;//已选时间颜色
+    private float selectTimeStrokeWidth = CUtils.dip2px(8);
+    /**
+     * 视频区域画笔
+     */
+    private Paint vedioAreaPaint = new Paint();
+    private int vedioBg = 0x336e9fff;//视频背景颜色
+    private RectF vedioAreaRect = new RectF();
     /**
      * 调用setCurrentTimeMillis时的时间（由于currentTimeMillis随时都在变，需要记录设置时的时间来计算是否超出当天的时间）
      */
@@ -226,50 +242,110 @@ public class RulerView extends RecyclerView {
         setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (isSelectTimeArea) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            float curX = event.getX();//拿到当前的x轴
+                            if (Math.abs(curX - selectTimeAreaDistanceLeft) < Math.abs(curX - selectTimeAreaDistanceRight)) {//左边
+                                ELog.e("左边滑动");
+                                //1-10分钟
+                                float currentInterval = (selectTimeAreaDistanceRight - curX + selectTimeStrokeWidth) / ((320 + zoom) / (10 * 60 * 1000f));
+                                ELog.e("currentInterval = " + currentInterval);
+//                                float currentInterval = (selectTimeAreaDistanceRight - selectTimeStrokeWidth - curX) * pixSecond;//当前时间间隔
+                                if (selectTimeMin < currentInterval && currentInterval < selectTimeMax) {
+                                    ELog.e("可滑动范围内");
+                                    selectTimeAreaDistanceLeft = curX;
+                                    ELog.e("getSelectStartTime() = " + DateUtils.getDateTime(getSelectStartTime()));
+                                    ELog.e("getSelectEndTime() = " + DateUtils.getDateTime(getSelectEndTime()));
+//                                    //实时地将结果回调出去
+                                    if (onSelectedTimeListener != null) {
+                                        onSelectedTimeListener.onDragging(getSelectStartTime(), getSelectEndTime());
+                                    }
+                                } else {
+                                    ELog.e("超过时间了***********");
+//                                    //实时地将结果回调出去
+                                    if (currentInterval >= selectTimeMax) {
+                                        onSelectedTimeListener.onMaxTime();
+                                    } else if (currentInterval <= selectTimeMin) {
+                                        onSelectedTimeListener.onMinTime();
+                                    }
+                                }
+                            } else {//右边
+                                //1-10分钟
+                                ELog.e("右边滑动");
+                                float currentInterval = (curX - (selectTimeAreaDistanceLeft + selectTimeStrokeWidth)) / ((320 + zoom) / (10 * 60 * 1000f));
+//                                float currentInterval = (curX - (selectTimeAreaDistanceLeft + selectTimeStrokeWidth)) * pixSecond;//当前时间间隔
+                                if (selectTimeMin < currentInterval && currentInterval < selectTimeMax) {
+                                    selectTimeAreaDistanceRight = curX;
+                                    ELog.e("getSelectStartTime() = " + DateUtils.getDateTime(getSelectStartTime()));
+                                    ELog.e("getSelectEndTime() = " + DateUtils.getDateTime(getSelectEndTime()));
+//                                    //实时地将结果回调出去
+                                    if (onSelectedTimeListener != null) {
+                                        onSelectedTimeListener.onDragging(getSelectStartTime(), getSelectEndTime());
+                                    }
+                                } else {
+                                    ELog.e("超过时间了---------");
+//                                    //实时地将结果回调出去
+                                    if (onSelectedTimeListener != null) {
+                                        if (currentInterval >= selectTimeMax) {
+                                            onSelectedTimeListener.onMaxTime();
+                                        } else if (currentInterval <= selectTimeMin) {
+                                            onSelectedTimeListener.onMinTime();
+                                        }
+                                    }
+                                }
+                            }
+                            postInvalidate();
+                            break;
+                    }
+                } else {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
 //                    ELog.e("单指按下");
-                    isDouble = false;
-                } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (event.getPointerCount() == 2 && isDouble) {
+                        isDouble = false;
+                    } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                        if (event.getPointerCount() == 2 && isDouble) {
 //                        ELog.e("双指移动");
-                        afterLenght = getDistance(event);// 获取两点的距离
-                        if (beforeLength == 0) {
-                            beforeLength = afterLenght;
-                        }
-                        float gapLenght = afterLenght - beforeLength;// 变化的长度
-                        if (Math.abs(gapLenght) > 5f) {
-                            mScale = afterLenght / beforeLength;// 求的缩放的比例
+                            afterLenght = getDistance(event);// 获取两点的距离
+                            if (beforeLength == 0) {
+                                beforeLength = afterLenght;
+                            }
+                            float gapLenght = afterLenght - beforeLength;// 变化的长度
+                            if (Math.abs(gapLenght) > 5f) {
+                                mScale = afterLenght / beforeLength;// 求的缩放的比例
 //                    listener.onZooming(mScale, time);
 //                            ELog.e("双指缩放了mScale = " + mScale);
-                            beforeLength = afterLenght;
-                            onZooming();
-                        }
-                    }
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (isDouble) {
-                        isAutoScroll = false;
-//                        ELog.e("双指抬起");
-                        new Timer().schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        setIsCanScrollBar(true);//双指抬起的时候，需要解除静止滑动
-                                    }
-                                });
+                                beforeLength = afterLenght;
+                                onZooming();
                             }
-                        }, 100);
-                    }
-                } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN) {
-                    if (event.getPointerCount() == 2) {
+                        }
+                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        if (isDouble) {
+                            isAutoScroll = false;
+//                        ELog.e("双指抬起");
+                            new Timer().schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            setIsCanScrollBar(true);//双指抬起的时候，需要解除静止滑动
+                                        }
+                                    });
+                                }
+                            }, 100);
+                        }
+                    } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN) {
+                        if (event.getPointerCount() == 2) {
 //                        ELog.e("双指按下");
-                        setIsCanScrollBar(false);//双指按下的时候，需要静止滑动
-                        lastTimeMillis = getCurrentTimeMillis();
-                        beforeLength = getDistance(event);
-                        isDouble = true;
-                        isAutoScroll = false;
-                        return true;
+                            setIsCanScrollBar(false);//双指按下的时候，需要静止滑动
+                            lastTimeMillis = getCurrentTimeMillis();
+                            beforeLength = getDistance(event);
+                            isDouble = true;
+                            isAutoScroll = false;
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -277,6 +353,38 @@ public class RulerView extends RecyclerView {
         });
     }
 
+    /**
+     * 获取选择的结束时间(默认是当前时间的后两分半钟)
+     *
+     * @return
+     */
+    public long getSelectEndTime() {
+        if (selectTimeAreaDistanceRight == -1) {
+            return currentTimeMillis + 2 * 60 * 1000 + 30 * 1000;
+        }
+        return currentTimeMillis - (long) ((getWidth() / 2 - selectTimeAreaDistanceRight + selectTimeStrokeWidth / 2) / ((320 + zoom) / (10 * 60 * 1000f)));
+    }
+
+    /**
+     * 获取选择的开始时间(默认是当前时间的前两分半钟)
+     *
+     * @return
+     */
+    public long getSelectStartTime() {
+        if (selectTimeAreaDistanceLeft == -1) {
+            return currentTimeMillis - 2 * 60 * 1000 - 30 * 1000;
+        }
+        return currentTimeMillis - (long) ((getWidth() / 2 - selectTimeAreaDistanceLeft - selectTimeStrokeWidth / 2) / ((320 + zoom) / (10 * 60 * 1000f)));
+    }
+
+    /**
+     * 选择时间最小值，单位毫秒
+     */
+    private long selectTimeMin = 1 * 60 * 1000;
+    /**
+     * 选择时间最大值，单位毫秒
+     */
+    private long selectTimeMax = 10 * 60 * 1000;
     /**
      * 视频时间段集合
      */
@@ -463,24 +571,74 @@ public class RulerView extends RecyclerView {
         centerLinePaint.setAntiAlias(true);
         centerLinePaint.setStrokeWidth(centerLineWidth);
         centerLinePaint.setColor(centerLineColor);
+
+
+        selectAreaPaint.setColor(selectTimeBorderColor);
+        selectAreaPaint.setAntiAlias(true);
+        selectAreaPaint.setStrokeCap(Paint.Cap.ROUND);
+        selectAreaPaint.setStyle(Paint.Style.STROKE);
+        selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth);
+
+        vedioArea.setColor(selectTimeAreaColor);
+        vedioArea.setAntiAlias(true);
+
+        vedioAreaPaint.setAntiAlias(true);
+        vedioAreaPaint.setColor(vedioBg);
     }
 
     /**
      * 画中心线
      *
-     * @param c
+     * @param canvas
      */
     @Override
-    public void draw(Canvas c) {
-        super.draw(c);
-        drawCenterLine(c);
-        drawSelectTimeArea(c);
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
+        drawCenterLine(canvas);
+        drawSelectTimeArea(canvas);
     }
 
-    private void drawSelectTimeArea(Canvas c) {
+    private void drawSelectTimeArea(Canvas canvas) {
+        if (isSelectTimeArea) {
+            if (selectTimeAreaDistanceLeft < 1) {
+                selectTimeAreaDistanceLeft = getWidth() / 2f - 2.5f * 60 * 1000 * (((320f + zoom) / (10 * 60 * 1000f))) - selectTimeStrokeWidth / 2;
+            }
+            if (selectTimeAreaDistanceRight < 1) {
+                selectTimeAreaDistanceRight = getWidth() / 2f + 2.5f * 60 * 1000 * (((320f + zoom) / (10 * 60 * 1000f))) + selectTimeStrokeWidth / 2;
+            }
+//            if (selectTimeAreaDistanceLeft == -1) {
+//                selectTimeAreaDistanceLeft = (getCurrentTimeMillis() - currentDateStartTimeMillis) / pixSecond / 1000f - 2.5f * 60 / pixSecond + lastPix;
+//            }
+//            if (selectTimeAreaDistanceRight == -1) {
+//                selectTimeAreaDistanceRight = (getCurrentTimeMillis() - currentDateStartTimeMillis) / pixSecond / 1000f + 2.5f * 60 / pixSecond + lastPix;
+//            }
+//            selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth);
+//            canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 2, selectTimeAreaDistanceLeft, view_height - textSize * 1.2f - selectTimeStrokeWidth / 2, selectAreaPaint);
+//            canvas.drawLine(selectTimeAreaDistanceRight, selectTimeStrokeWidth / 2, selectTimeAreaDistanceRight, view_height - textSize * 1.2f - selectTimeStrokeWidth / 2, selectAreaPaint);
+//            selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth / 3);
+//            canvas.drawLine(selectTimeAreaDistanceRight, 0, selectTimeAreaDistanceLeft, 0, selectAreaPaint);
+//            selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth / 4);
+//            canvas.drawLine(selectTimeAreaDistanceRight, view_height - textSize * 1.2f - selectTimeStrokeWidth / 6, selectTimeAreaDistanceLeft, view_height - textSize * 1.2f - selectTimeStrokeWidth / 6, selectAreaPaint);
+//            //画带透明色的选择区域
+//            canvas.drawRect(selectTimeAreaDistanceLeft, 0, selectTimeAreaDistanceRight, view_height - textSize * 1.2f, vedioArea);
+//            //回调结果出去
+//            onSelectedTimeListener.onDragging(getSelectStartTime(), getSelectEndTime());
+            //画左右两条选择视频的线
+            selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth);
+            canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 2, selectTimeAreaDistanceLeft, CUtils.dip2px(120) - selectTimeStrokeWidth / 2, selectAreaPaint);
+            canvas.drawLine(selectTimeAreaDistanceRight, selectTimeStrokeWidth / 2, selectTimeAreaDistanceRight, CUtils.dip2px(120) - selectTimeStrokeWidth / 2, selectAreaPaint);
+            //画上下两条选择视频的线1
+            selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth / 3);
+            canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 6, selectTimeAreaDistanceRight, selectTimeStrokeWidth / 6, selectAreaPaint);
+            canvas.drawLine(selectTimeAreaDistanceLeft, CUtils.dip2px(120) - selectTimeStrokeWidth / 6, selectTimeAreaDistanceRight, CUtils.dip2px(120) - selectTimeStrokeWidth / 6, selectAreaPaint);
 
+            //画视频区域
+            canvas.drawRect(selectTimeAreaDistanceLeft, 0, selectTimeAreaDistanceRight, CUtils.dip2px(120), vedioArea);
+        }
     }
 
+    private float selectTimeAreaDistanceLeft = -1;
+    private float selectTimeAreaDistanceRight = -1;
 
     /**
      * 画中间线
@@ -535,6 +693,15 @@ public class RulerView extends RecyclerView {
                 adapter.setScaleMode(scaleMode);
             }
         }
+        selectTimeAreaDistanceLeft = -1;//需要复位
+        selectTimeAreaDistanceRight = -1;//需要复位
         setIsCanScrollBar(!isSelectTimeArea);//选择时间时不能滑动
+        postInvalidate();
+    }
+
+    private OnSelectedTimeListener onSelectedTimeListener;
+
+    public void setOnSelectedTimeListener(OnSelectedTimeListener onSelectedTimeListener) {
+        this.onSelectedTimeListener = onSelectedTimeListener;
     }
 }

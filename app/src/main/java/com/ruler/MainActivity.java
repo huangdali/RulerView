@@ -4,11 +4,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.hdl.elog.ELog;
 import com.hdl.ruler.RulerView;
 import com.hdl.ruler.TipView;
 import com.hdl.ruler.bean.OnBarMoveListener;
+import com.hdl.ruler.bean.OnSelectedTimeListener;
 import com.hdl.ruler.bean.TimeSlot;
 import com.hdl.ruler.utils.DateUtils;
 
@@ -17,6 +18,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private TextView tv;
+    private TextView tvSelectTime;
     private RulerView rulerView;
     private long currentTimeMillis;
     private TipView tvTip;
@@ -28,8 +30,24 @@ public class MainActivity extends AppCompatActivity {
         tv = (TextView) findViewById(R.id.textview);
         rulerView = findViewById(R.id.ruler_view);
         tvTip = findViewById(R.id.tv_tip);
+        tvSelectTime = findViewById(R.id.tv_select_time);
         rulerView.setCurrentTimeMillis(System.currentTimeMillis());
+        rulerView.setOnSelectedTimeListener(new OnSelectedTimeListener() {
+            @Override
+            public void onDragging(long startTime, long endTime) {
+                tvSelectTime.setText(DateUtils.getDateTime(startTime) + " --- " + DateUtils.getDateTime(endTime));
+            }
 
+            @Override
+            public void onMaxTime() {
+                Toast.makeText(MainActivity.this, "不能超过10分钟", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onMinTime() {
+                Toast.makeText(MainActivity.this, "不能低于一分钟", Toast.LENGTH_SHORT).show();
+            }
+        });
 //        rulerView.startMove();
         rulerView.setOnBarMoveListener(new OnBarMoveListener() {
             @Override
@@ -75,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
 //        data.add(new TimeSlot(DateUtils.getTodayStart(System.currentTimeMillis()), DateUtils.getTodayStart(System.currentTimeMillis()) + 15 * 60 * 60 * 1000 + 60 * 1000, DateUtils.getTodayStart(System.currentTimeMillis()) + 15 * 60 * 60 * 1000 + 16 * 60 * 1000));
 //        data.add(new TimeSlot(DateUtils.getTodayStart(System.currentTimeMillis()), DateUtils.getTodayStart(System.currentTimeMillis()) + 16 * 60 * 60 * 1000 + 60 * 1000, DateUtils.getTodayStart(System.currentTimeMillis()) + 16 * 60 * 60 * 1000 + 5* 60 * 1000));
         data.add(new TimeSlot(DateUtils.getTodayStart(System.currentTimeMillis()), DateUtils.getTodayStart(System.currentTimeMillis()) - 5 * 60 * 1000, DateUtils.getTodayEnd(System.currentTimeMillis()) + 15 * 60 * 1000));
-        ELog.e(data);
+//        ELog.e(data);
         rulerView.setVedioTimeSlot(data);
     }
 
@@ -123,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
     boolean isSelectTimeArea = false;
 
     public void onTimeSelected(View view) {
+        tvSelectTime.setText(DateUtils.getDateTime(rulerView.getSelectStartTime()) + " --- " + DateUtils.getDateTime(rulerView.getSelectEndTime()));
         isSelectTimeArea = !isSelectTimeArea;
         rulerView.setSelectTimeArea(isSelectTimeArea);
     }
