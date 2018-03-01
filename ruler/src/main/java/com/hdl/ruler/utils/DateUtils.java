@@ -178,4 +178,28 @@ public class DateUtils {
         TimeSlot timeSlot = new TimeSlot(DateUtils.getTodayStart(System.currentTimeMillis()), DateUtils.getTodayStart(System.currentTimeMillis()) - 60 * 60 * 1000, DateUtils.getTodayStart(System.currentTimeMillis()) + 120 * 60 * 1000);
         System.out.println(timeSlot.toString());
     }
+
+    /**
+     * 判断时间是否在时间段内
+     *
+     * @param nowTime
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
+    public static boolean isCurrentTimeArea(long nowTime, long beginTime, long endTime) {
+        return nowTime >= beginTime && nowTime <= endTime;
+    }
+
+    /**
+     * 判断指定时间段是否包含在某个时间段
+     *
+     * @return
+     */
+    public static boolean isContainTime(TimeSlot timeSlot, long beginTime, long endTime) {
+//        ELog.e(timeSlot);
+//        ELog.e("beginTime = "+beginTime);
+//        ELog.e("endTime = "+endTime);
+        return beginTime >= timeSlot.getStartTimeMillis() && endTime <= timeSlot.getEndTimeMillis();
+    }
 }
