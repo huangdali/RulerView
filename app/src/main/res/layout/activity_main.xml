@@ -1,138 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <Button
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onShowOrHideLeft"
-            android:text="上一天" />
+            android:orientation="horizontal">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onShowOrHideRight"
-            android:text="下一天" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onShowOrHideLeft"
+                android:text="上一天" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onShowOrHideLeftLandscape"
-            android:text="上一天(横)" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onShowOrHideRight"
+                android:text="下一天" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onShowOrHideRightLandscape"
-            android:text="下一天（横）" />
-    </LinearLayout>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onShowOrHideLeftLandscape"
+                android:text="上一天(横)" />
 
-    <com.hdl.ruler.RulerItemView
-        android:layout_width="match_parent"
-        android:layout_height="166dp"
-        android:layout_marginTop="10dp"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:visibility="gone" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onShowOrHideRightLandscape"
+                android:text="下一天（横）" />
+        </LinearLayout>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="166dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp">
-
-        <com.hdl.ruler.RulerView
-            android:id="@+id/ruler_view"
+        <com.hdl.ruler.RulerItemView
             android:layout_width="match_parent"
             android:layout_height="166dp"
-            android:layout_centerInParent="true"
+            android:layout_marginTop="10dp"
             android:clipChildren="false"
-            android:clipToPadding="false">
+            android:clipToPadding="false"
+            android:visibility="gone" />
 
-        </com.hdl.ruler.RulerView>
-
-        <com.hdl.ruler.TipView
-            android:id="@+id/tv_tip"
+        <RelativeLayout
+            android:id="@+id/rl_lanspace_ruler_content"
             android:layout_width="match_parent"
-            android:layout_height="120dp" />
-    </FrameLayout>
+            android:visibility="gone"
+            android:background="#1000"
+            android:layout_height="75dp" />
+
+        <FrameLayout
+            android:id="@+id/fl_ruler_content"
+            android:layout_width="match_parent"
+            android:layout_height="178dp"
+            android:background="#1000"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp">
+
+            <com.hdl.ruler.RulerView
+                android:id="@+id/ruler_view"
+                android:layout_width="match_parent"
+                android:layout_height="166dp"
+                android:layout_centerInParent="true"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+            </com.hdl.ruler.RulerView>
+
+            <com.hdl.ruler.TipView
+                android:id="@+id/tv_tip"
+                android:layout_width="match_parent"
+                android:layout_height="120dp" />
+        </FrameLayout>
 
 
-    <TextView
-        android:id="@+id/textview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/ll_function1"
-        android:gravity="center"
-        android:text="时间" />
-
-    <TextView
-        android:id="@+id/tv_select_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/ll_function1"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:gravity="center"
-        android:text="选择的时间" />
-
-    <LinearLayout
-        android:id="@+id/ll_function"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
-
-        <Button
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/textview"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onSetAdd"
-            android:text="播放" />
+            android:layout_above="@+id/ll_function1"
+            android:gravity="center"
+            android:text="时间" />
 
-        <Button
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tv_select_time"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onStartMove"
-            android:text="移动" />
+            android:layout_above="@+id/ll_function1"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="选择的时间" />
 
-        <Button
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/ll_function"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onPuaseMove"
-            android:text="暂停" />
+            android:layout_alignParentBottom="true">
 
-        <Button
-            android:layout_width="wrap_content"
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onSetAdd"
+                android:text="播放" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onStartMove"
+                android:text="移动" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onPuaseMove"
+                android:text="暂停" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onCurrentTime"
+                android:text="当前时间" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_function1"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onCurrentTime"
-            android:text="当前时间" />
+            android:layout_above="@+id/ll_function"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onScollSwitch"
+                android:text="滑动开关" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onTimeSelected"
+                android:text="时间选择" />
+        </LinearLayout>
 
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/ll_function1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/ll_function"
-        android:orientation="horizontal">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onScollSwitch"
-            android:text="滑动开关" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onTimeSelected"
-            android:text="时间选择" />
-    </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

@@ -9,6 +9,7 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.ScaleMode;
 import com.hdl.ruler.bean.TimeSlot;
 import com.hdl.ruler.utils.CUtils;
@@ -76,7 +77,7 @@ public class RulerItemView extends View {
     private int selectTimeAreaColor = 0x33fabb64;//已选时间颜色
     private float selectTimeStrokeWidth = CUtils.dip2px(8);
 
-    private int viewHeight = CUtils.dip2px(120);
+    private int viewHeight = CUtils.dip2px(178);
     //除数、刻度精度
     private int divisor;
 
@@ -214,43 +215,41 @@ public class RulerItemView extends View {
                 //画上面的大刻度
                 canvas.drawLine(0, 0, 0, rulerHeightSamll * 2, largeRulerPaint);
                 //画下面的大刻度
-                canvas.drawLine(0, viewHeight, 0, viewHeight - rulerHeightSamll * 2, largeRulerPaint);
+                canvas.drawLine(0, viewHeight- textSize*2 - upAndDownLineWidth, 0, viewHeight - rulerHeightSamll * 2 - textSize * 2 - upAndDownLineWidth, largeRulerPaint);
                 float timeStrWidth = keyTickTextPaint.measureText(DateUtils.getHourMinute(timeIndex));
 //                canvas.drawText(DateUtils.getHourMinute(timeIndex), timeStrWidth + rulerWidthSamll, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
-                canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth / 2, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
+                canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth / 2, viewHeight - textSize, keyTickTextPaint);
             } else {//小刻度
                 //画上面的小刻度
                 canvas.drawLine(0, 0, 0, rulerHeightSamll, smallRulerPaint);
                 //画下面的小刻度
-                canvas.drawLine(0, viewHeight, 0, viewHeight - rulerHeightSamll, smallRulerPaint);
+                canvas.drawLine(0, viewHeight- textSize*2 - upAndDownLineWidth, 0, viewHeight - rulerHeightSamll- textSize*2 - upAndDownLineWidth, smallRulerPaint);
             }
-//            selectAreaPaint.setStrokeWidth(1);
-//            canvas.drawLine(0, 0, 0, viewHeight, selectAreaPaint);
+//            canvas.drawLine(0,0,0,viewHeight,);
         } else {
+            int count = 0;
             for (int i = 0; i < 60; i++) {
                 if (i == 0 || i == 59) {
+                    count++;
+//                    ELog.e("画了几次了 count =" + count);
                     //画上面的大刻度
-                    canvas.drawLine(rightX, 0, rightX, rulerHeightSamll * 2, smallRulerPaint);
-                    //画下面的大刻度
-                    canvas.drawLine(rightX, viewHeight, rightX, viewHeight - rulerHeightSamll * 2, smallRulerPaint);
-                    rightX += itemWidth;
                     if (i == 0) {
+                        canvas.drawLine(rightX, 0, rightX, rulerHeightSamll * 2, smallRulerPaint);
+                        //画下面的大刻度
+                        canvas.drawLine(rightX, viewHeight - textSize * 2 - upAndDownLineWidth, rightX, viewHeight - rulerHeightSamll * 2 - textSize * 2 - upAndDownLineWidth, smallRulerPaint);
+                        rightX += itemWidth;
+                        ELog.e("viewHeght = " + viewHeight);
+                        ELog.e("viewHeght = " + viewHeight);
                         float timeStrWidth = keyTickTextPaint.measureText(DateUtils.getHourMinute(timeIndex));
-                        canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth / 2, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
-//                        canvas.drawText(DateUtils.getHourMinute(timeIndex), rightX - timeStrWidth + rulerWidthSamll, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
+                        canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth / 2, viewHeight - textSize, keyTickTextPaint);
                     }
-//                    else {
-//                        selectAreaPaint.setStrokeWidth(1);
-//                        canvas.drawLine(0, 0, 0, viewHeight, selectAreaPaint);
-//                    }
                 } else if (i % divisor == 0) {
                     //画上面的小刻度
                     canvas.drawLine(rightX, 0, rightX, rulerHeightSamll, largeRulerPaint);
                     //画下面的小刻度
-                    canvas.drawLine(rightX, viewHeight, rightX, viewHeight - rulerHeightSamll, largeRulerPaint);
+                    canvas.drawLine(rightX, viewHeight - textSize*2 - upAndDownLineWidth, rightX, viewHeight - rulerHeightSamll - textSize*2 - upAndDownLineWidth, largeRulerPaint);
                     rightX += itemWidth;
                 }
-
             }
         }
     }
@@ -263,8 +262,8 @@ public class RulerItemView extends View {
     private void drawUpAndDownLine(Canvas canvas) {
         int viewWidth = getWidth();
         //画上下两条线
-        canvas.drawLine(0, 0, viewWidth, 0, upAndDownLinePaint);
-        canvas.drawLine(0, viewHeight, viewWidth, viewHeight, upAndDownLinePaint);
+        canvas.drawLine(0, upAndDownLineWidth / 2, viewWidth, upAndDownLineWidth / 2, upAndDownLinePaint);
+        canvas.drawLine(0, viewHeight - textSize*2 - upAndDownLineWidth / 2, viewWidth, viewHeight - textSize*2 - upAndDownLineWidth / 2, upAndDownLinePaint);
     }
 
     /**
@@ -300,5 +299,10 @@ public class RulerItemView extends View {
         this.vedioTimeSlot.clear();
         this.vedioTimeSlot.addAll(vedioTimeSlot);
         postInvalidate();//重绘
+    }
+    public void setViewHeight(int viewHeight) {
+        this.viewHeight = viewHeight;
+        ELog.e("设置高度了"+viewHeight);
+        postInvalidate();
     }
 }

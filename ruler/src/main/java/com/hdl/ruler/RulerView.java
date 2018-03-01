@@ -1,6 +1,7 @@
 package com.hdl.ruler;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -15,7 +16,6 @@ import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.OnBarMoveListener;
@@ -59,6 +59,10 @@ public class RulerView extends RecyclerView {
      * 屏幕的宽度
      */
     private int mScreenWidth = 0;
+    /**
+     * 屏幕的高度
+     */
+    private int mScreenHeight = 0;
     /**
      * 第一个可见item的位置
      */
@@ -173,6 +177,8 @@ public class RulerView extends RecyclerView {
         DisplayMetrics displaymetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(displaymetrics);
         mScreenWidth = displaymetrics.widthPixels;
+        mScreenHeight = displaymetrics.heightPixels;
+        ELog.e("mScreenWidth = " + mScreenWidth);
         //中心点距离左边所占用的时长
         centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
         addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -194,7 +200,8 @@ public class RulerView extends RecyclerView {
                 currentTimeMillis = (long) (DateUtils.getTodayStart(startTimeMillis) + leftScrollXCalculated / ((320.0 + zoom) / (10 * 60 * 1000)) + centerPointDuration) - TWO_HOUR;
                 //实时回调拖动时间
                 if (onBarMoveListener != null) {
-                    onBarMoveListener.onBarMoving(currentTimeMillis);
+//                    onBarMoveListener.onBarMoving(currentTimeMillis);
+                    onBarMoveListener.onDragBar(dx > 0, currentTimeMillis);
                 }
             }
 
@@ -203,39 +210,36 @@ public class RulerView extends RecyclerView {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == 0) {//滑动结束
                     //1、滑动结束时，判断是否是当天的时间，如果不是则需要回退到零界点（00:00:00,23:59:59）
-                    ELog.e("currentTimeMillis = " + DateUtils.getDateTime(currentTimeMillis));
                     isAutoScroll = true;
                     if (currentTimeMillis < DateUtils.getTodayStart(startTimeMillis)) {
-                        ELog.e("上一天了");
+                        //上一天
                         if (onBarMoveListener != null) {
                             onBarMoveListener.onMoveExceedStartTime();
                         }
-                        Toast.makeText(context, "上一天", Toast.LENGTH_SHORT).show();
                         setCurrentTimeMillis(DateUtils.getTodayStart(startTimeMillis));
                         toTodayStartPostion();
                         if (onBarMoveListener != null) {
                             onBarMoveListener.onBarMoveFinish(DateUtils.getTodayStart(startTimeMillis));
                         }
+
                     } else if (currentTimeMillis > DateUtils.getTodayEnd(startTimeMillis)) {
-                        ELog.e("下一天了 ");
+                        //下一天了
                         if (onBarMoveListener != null) {
                             onBarMoveListener.onMoveExceedEndTime();
                         }
                         setCurrentTimeMillis(DateUtils.getTodayEnd(startTimeMillis));
                         toTodayEndPostion();
-                        Toast.makeText(context, "下一天", Toast.LENGTH_SHORT).show();
                         if (onBarMoveListener != null) {
                             onBarMoveListener.onBarMoveFinish(DateUtils.getTodayEnd(startTimeMillis));
                         }
                     } else {
-                        ELog.e("当天");
+                        //当天
                         if (onBarMoveListener != null) {
                             onBarMoveListener.onBarMoveFinish(currentTimeMillis);
                         }
                     }
-
                 } else {//开始滑动
-                    stopMove();
+                    closeMove();
                 }
             }
         });
@@ -249,22 +253,18 @@ public class RulerView extends RecyclerView {
                         case MotionEvent.ACTION_MOVE:
                             float curX = event.getX();//拿到当前的x轴
                             if (Math.abs(curX - selectTimeAreaDistanceLeft) < Math.abs(curX - selectTimeAreaDistanceRight)) {//左边
-                                ELog.e("左边滑动");
+                                //左边滑动
                                 //1-10分钟
                                 float currentInterval = (selectTimeAreaDistanceRight - curX + selectTimeStrokeWidth) / ((320 + zoom) / (10 * 60 * 1000f));
-                                ELog.e("currentInterval = " + currentInterval);
-//                                float currentInterval = (selectTimeAreaDistanceRight - selectTimeStrokeWidth - curX) * pixSecond;//当前时间间隔
                                 if (selectTimeMin < currentInterval && currentInterval < selectTimeMax) {
-                                    ELog.e("可滑动范围内");
+                                    //可滑动范围内
                                     selectTimeAreaDistanceLeft = curX;
-                                    ELog.e("getSelectStartTime() = " + DateUtils.getDateTime(getSelectStartTime()));
-                                    ELog.e("getSelectEndTime() = " + DateUtils.getDateTime(getSelectEndTime()));
-//                                    //实时地将结果回调出去
+//                                   //实时地将结果回调出去
                                     if (onSelectedTimeListener != null) {
                                         onSelectedTimeListener.onDragging(getSelectStartTime(), getSelectEndTime());
                                     }
                                 } else {
-                                    ELog.e("超过时间了***********");
+                                    //超过时间了
 //                                    //实时地将结果回调出去
                                     if (currentInterval >= selectTimeMax) {
                                         onSelectedTimeListener.onMaxTime();
@@ -274,19 +274,16 @@ public class RulerView extends RecyclerView {
                                 }
                             } else {//右边
                                 //1-10分钟
-                                ELog.e("右边滑动");
+                                //右边滑动
                                 float currentInterval = (curX - (selectTimeAreaDistanceLeft + selectTimeStrokeWidth)) / ((320 + zoom) / (10 * 60 * 1000f));
-//                                float currentInterval = (curX - (selectTimeAreaDistanceLeft + selectTimeStrokeWidth)) * pixSecond;//当前时间间隔
                                 if (selectTimeMin < currentInterval && currentInterval < selectTimeMax) {
                                     selectTimeAreaDistanceRight = curX;
-                                    ELog.e("getSelectStartTime() = " + DateUtils.getDateTime(getSelectStartTime()));
-                                    ELog.e("getSelectEndTime() = " + DateUtils.getDateTime(getSelectEndTime()));
 //                                    //实时地将结果回调出去
                                     if (onSelectedTimeListener != null) {
                                         onSelectedTimeListener.onDragging(getSelectStartTime(), getSelectEndTime());
                                     }
                                 } else {
-                                    ELog.e("超过时间了---------");
+                                    //超过时间了
 //                                    //实时地将结果回调出去
                                     if (onSelectedTimeListener != null) {
                                         if (currentInterval >= selectTimeMax) {
@@ -302,11 +299,11 @@ public class RulerView extends RecyclerView {
                     }
                 } else {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                    ELog.e("单指按下");
+                        //单指按下
                         isDouble = false;
                     } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                         if (event.getPointerCount() == 2 && isDouble) {
-//                        ELog.e("双指移动");
+                            //双指移动
                             afterLenght = getDistance(event);// 获取两点的距离
                             if (beforeLength == 0) {
                                 beforeLength = afterLenght;
@@ -314,8 +311,7 @@ public class RulerView extends RecyclerView {
                             float gapLenght = afterLenght - beforeLength;// 变化的长度
                             if (Math.abs(gapLenght) > 5f) {
                                 mScale = afterLenght / beforeLength;// 求的缩放的比例
-//                    listener.onZooming(mScale, time);
-//                            ELog.e("双指缩放了mScale = " + mScale);
+                                //双指缩放了
                                 beforeLength = afterLenght;
                                 onZooming();
                             }
@@ -323,7 +319,7 @@ public class RulerView extends RecyclerView {
                     } else if (event.getAction() == MotionEvent.ACTION_UP) {
                         if (isDouble) {
                             isAutoScroll = false;
-//                        ELog.e("双指抬起");
+                            //双指抬起
                             new Timer().schedule(new TimerTask() {
                                 @Override
                                 public void run() {
@@ -338,7 +334,7 @@ public class RulerView extends RecyclerView {
                         }
                     } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN) {
                         if (event.getPointerCount() == 2) {
-//                        ELog.e("双指按下");
+                            //双指按下
                             setIsCanScrollBar(false);//双指按下的时候，需要静止滑动
                             lastTimeMillis = getCurrentTimeMillis();
                             beforeLength = getDistance(event);
@@ -422,20 +418,25 @@ public class RulerView extends RecyclerView {
         }
         if (zoom < -320 / 2) {
             scaleMode = ScaleMode.KEY_HOUSE;
-//            ELog.e("小时级别了zoom = " + zoom);
+            //小时级别了
             if (Math.abs(320 + zoom) < 30) {//不能小于10dp
-//                ELog.e("强制设置为小时级别的");
+                // 强制设置为小时级别的
                 zoom = -320 + 30;
+                if (onBarMoveListener != null) {
+                    onBarMoveListener.onMinScale();
+                }
             }
         } else if (zoom < 320 * 1.5) {//不能超过1.5倍
             scaleMode = ScaleMode.KEY_MINUTE;
             isAutoScroll = false;
-//            ELog.e("分钟级别了zoom = " + zoom);
+            //分钟级别了
         } else {
+            //已经是最大刻度
             scaleMode = ScaleMode.KEY_MINUTE;
             zoom = 320 * 1.5f;
-//            Toast.makeText(context, "已经是最大刻度", Toast.LENGTH_SHORT).show();
-//            ELog.e("超过分钟级别了zoom = " + zoom);
+            if (onBarMoveListener != null) {
+                onBarMoveListener.onMaxScale();
+            }
         }
         centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
         setCurrentTimeMillis(lastTimeMillis);
@@ -498,7 +499,6 @@ public class RulerView extends RecyclerView {
     public synchronized void setCurrentTimeMillis(long currentTimeMillis) {
         this.currentTimeMillis = currentTimeMillis;
         startTimeMillis = currentTimeMillis;
-//        ELog.e(" setCurrentTimeMillis = " + DateUtils.getDateTime(currentTimeMillis));
         updateCenteLinePostion();
     }
 
@@ -525,7 +525,7 @@ public class RulerView extends RecyclerView {
     /**
      * 开始移动
      */
-    public void startMove() {
+    public void openMove() {
         isAutoScroll = true;
         if (moveTimer != null) {
             moveTimer.cancel();
@@ -547,7 +547,6 @@ public class RulerView extends RecyclerView {
                         ELog.e("currentTimeMillis = " + currentTimeMillis);
                         ELog.e("当前时间：" + DateUtils.getDateTime(currentTimeMillis));
                         updateCenteLinePostion();
-//                        setCurrentTimeMillis(currentTimeMillis);
                     }
                 });
             }
@@ -557,7 +556,7 @@ public class RulerView extends RecyclerView {
     /**
      * 结束移动
      */
-    public void stopMove() {
+    public void closeMove() {
         isAutoScroll = true;
         if (moveTimer != null) {
             moveTimer.cancel();
@@ -606,23 +605,6 @@ public class RulerView extends RecyclerView {
             if (selectTimeAreaDistanceRight < 1) {
                 selectTimeAreaDistanceRight = getWidth() / 2f + 2.5f * 60 * 1000 * (((320f + zoom) / (10 * 60 * 1000f))) + selectTimeStrokeWidth / 2;
             }
-//            if (selectTimeAreaDistanceLeft == -1) {
-//                selectTimeAreaDistanceLeft = (getCurrentTimeMillis() - currentDateStartTimeMillis) / pixSecond / 1000f - 2.5f * 60 / pixSecond + lastPix;
-//            }
-//            if (selectTimeAreaDistanceRight == -1) {
-//                selectTimeAreaDistanceRight = (getCurrentTimeMillis() - currentDateStartTimeMillis) / pixSecond / 1000f + 2.5f * 60 / pixSecond + lastPix;
-//            }
-//            selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth);
-//            canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 2, selectTimeAreaDistanceLeft, view_height - textSize * 1.2f - selectTimeStrokeWidth / 2, selectAreaPaint);
-//            canvas.drawLine(selectTimeAreaDistanceRight, selectTimeStrokeWidth / 2, selectTimeAreaDistanceRight, view_height - textSize * 1.2f - selectTimeStrokeWidth / 2, selectAreaPaint);
-//            selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth / 3);
-//            canvas.drawLine(selectTimeAreaDistanceRight, 0, selectTimeAreaDistanceLeft, 0, selectAreaPaint);
-//            selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth / 4);
-//            canvas.drawLine(selectTimeAreaDistanceRight, view_height - textSize * 1.2f - selectTimeStrokeWidth / 6, selectTimeAreaDistanceLeft, view_height - textSize * 1.2f - selectTimeStrokeWidth / 6, selectAreaPaint);
-//            //画带透明色的选择区域
-//            canvas.drawRect(selectTimeAreaDistanceLeft, 0, selectTimeAreaDistanceRight, view_height - textSize * 1.2f, vedioArea);
-//            //回调结果出去
-//            onSelectedTimeListener.onDragging(getSelectStartTime(), getSelectEndTime());
             //画左右两条选择视频的线
             selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth);
             canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 2, selectTimeAreaDistanceLeft, CUtils.dip2px(120) - selectTimeStrokeWidth / 2, selectAreaPaint);
@@ -631,9 +613,9 @@ public class RulerView extends RecyclerView {
             selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth / 3);
             canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 6, selectTimeAreaDistanceRight, selectTimeStrokeWidth / 6, selectAreaPaint);
             canvas.drawLine(selectTimeAreaDistanceLeft, CUtils.dip2px(120) - selectTimeStrokeWidth / 6, selectTimeAreaDistanceRight, CUtils.dip2px(120) - selectTimeStrokeWidth / 6, selectAreaPaint);
-
             //画视频区域
             canvas.drawRect(selectTimeAreaDistanceLeft, 0, selectTimeAreaDistanceRight, CUtils.dip2px(120), vedioArea);
+            onSelectedTimeListener.onDragging(getSelectStartTime(), getSelectEndTime());
         }
     }
 
@@ -646,7 +628,7 @@ public class RulerView extends RecyclerView {
      * @param canvas
      */
     private void drawCenterLine(Canvas canvas) {
-        canvas.drawLine(getWidth() / 2, 0, getWidth() / 2, CUtils.dip2px(120), centerLinePaint);
+        canvas.drawLine(getWidth() / 2, 0, getWidth() / 2, viewHeight - CUtils.dip2px(12)*2, centerLinePaint);
     }
 
     /**
@@ -699,9 +681,43 @@ public class RulerView extends RecyclerView {
         postInvalidate();
     }
 
+    //    @Override
+//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+//        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+//        if (heightMode == MeasureSpec.EXACTLY) {//布局里面设置大小，其他都是默认值
+//            ELog.e("heightSize = "+heightSize);
+//            adapter.setViewHeight(heightSize);
+//        }
+//        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+//        setMeasuredDimension(widthSize, heightSize);
+//    }
     private OnSelectedTimeListener onSelectedTimeListener;
 
     public void setOnSelectedTimeListener(OnSelectedTimeListener onSelectedTimeListener) {
         this.onSelectedTimeListener = onSelectedTimeListener;
+    }
+
+    private int viewHeight = CUtils.dip2px(178);
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        int temp = mScreenHeight;
+        mScreenHeight = mScreenWidth;
+        mScreenWidth = temp;
+        //中心点距离左边所占用的时长
+        centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
+        postInvalidate();
+        setCurrentTimeMillis(currentTimeMillis);
+        ELog.e("mScreenWidth = " + mScreenWidth);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            viewHeight = CUtils.dip2px(75);
+        } else {
+            viewHeight = CUtils.dip2px(178);
+        }
+        ELog.e("设置viewheight = "+viewHeight);
+        adapter.setViewHeight(viewHeight);
     }
 }

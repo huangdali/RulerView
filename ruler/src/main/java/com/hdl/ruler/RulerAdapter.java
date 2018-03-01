@@ -11,6 +11,7 @@ import android.view.WindowManager;
 
 import com.hdl.ruler.bean.ScaleMode;
 import com.hdl.ruler.bean.TimeSlot;
+import com.hdl.ruler.utils.CUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,8 +72,9 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
 //        }
         View view = holder.parentView;
 //        ELog.e("320 + zoom = "+(320 + zoom));
-        view.setLayoutParams(new RecyclerView.LayoutParams(itemWidth, RecyclerView.LayoutParams.WRAP_CONTENT));
+        view.setLayoutParams(new RecyclerView.LayoutParams(itemWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
         holder.view.postInvalidate();
+        holder.view.setViewHeight(viewHeight);
 //        TextView tv = (TextView) holder.view.findViewById(R.id.ruler_num);
 ////        ImageView imageView = (ImageView) holder.view.findViewById(R.id.ruler_img);
 //
@@ -119,7 +121,6 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
         notifyDataSetChanged();
     }
 
-
     class RulerViewHolder extends RecyclerView.ViewHolder {
         private RulerItemView view;
         private View parentView;
@@ -148,6 +149,18 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
 
     public void setScaleMode(ScaleMode scaleMode) {
         this.scaleMode = scaleMode;
+        notifyDataSetChanged();
+    }
+
+    private int viewHeight = CUtils.dip2px(178);
+
+    /**
+     * 设置view的高度
+     *
+     * @param viewHeight
+     */
+    public void setViewHeight(int viewHeight) {
+        this.viewHeight = viewHeight;
         notifyDataSetChanged();
     }
 }
