@@ -9,7 +9,6 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.ScaleMode;
 import com.hdl.ruler.bean.TimeSlot;
 import com.hdl.ruler.utils.CUtils;
@@ -177,23 +176,23 @@ public class RulerItemView extends View {
             boolean isLeftTime = DateUtils.isCurrentTimeArea(timeSlot.getStartTimeMillis(), timeIndex * 60 * 1000, timeIndex * 60 * 1000 + 10 * 60 * 1000);
             boolean isRightTime = DateUtils.isCurrentTimeArea(timeSlot.getEndTimeMillis(), timeIndex * 60 * 1000, timeIndex * 60 * 1000 + 10 * 60 * 1000);
             if (isContainTime) {//包含所有（画整个item）
-                vedioAreaRect.set(0, 0, getWidth(), viewHeight);
+                vedioAreaRect.set(0, 0, getWidth(), viewHeight-textSize*2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
                 return;
             } else if (isLeftTime && isRightTime) {//两端都在（画左边时刻到右边时刻）
                 float distanceX1 = (timeSlot.getStartTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
                 float distanceX2 = (timeSlot.getEndTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
-                vedioAreaRect.set(distanceX1, 0, distanceX2, viewHeight);
+                vedioAreaRect.set(distanceX1, 0, distanceX2, viewHeight-textSize*2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
                 return;
             } else if (isLeftTime) {//只有左边在（左边时刻开始到item结束都画）
                 float distanceX = (timeSlot.getStartTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
-                vedioAreaRect.set(distanceX, 0, getWidth(), viewHeight);
+                vedioAreaRect.set(distanceX, 0, getWidth(), viewHeight-textSize*2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
                 return;
             } else if (isRightTime) {//只有右边在（画从头开始到右边时刻）
                 float distanceX = (timeSlot.getEndTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
-                vedioAreaRect.set(0, 0, distanceX, viewHeight);
+                vedioAreaRect.set(0, 0, distanceX, viewHeight-textSize*2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
                 return;
             }
@@ -225,21 +224,17 @@ public class RulerItemView extends View {
                 //画下面的小刻度
                 canvas.drawLine(0, viewHeight- textSize*2 - upAndDownLineWidth, 0, viewHeight - rulerHeightSamll- textSize*2 - upAndDownLineWidth, smallRulerPaint);
             }
-//            canvas.drawLine(0,0,0,viewHeight,);
         } else {
-            int count = 0;
             for (int i = 0; i < 60; i++) {
                 if (i == 0 || i == 59) {
-                    count++;
-//                    ELog.e("画了几次了 count =" + count);
                     //画上面的大刻度
                     if (i == 0) {
                         canvas.drawLine(rightX, 0, rightX, rulerHeightSamll * 2, smallRulerPaint);
                         //画下面的大刻度
                         canvas.drawLine(rightX, viewHeight - textSize * 2 - upAndDownLineWidth, rightX, viewHeight - rulerHeightSamll * 2 - textSize * 2 - upAndDownLineWidth, smallRulerPaint);
                         rightX += itemWidth;
-                        ELog.e("viewHeght = " + viewHeight);
-                        ELog.e("viewHeght = " + viewHeight);
+//                        ELog.e("viewHeght = " + viewHeight);
+//                        ELog.e("viewHeght = " + viewHeight);
                         float timeStrWidth = keyTickTextPaint.measureText(DateUtils.getHourMinute(timeIndex));
                         canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth / 2, viewHeight - textSize, keyTickTextPaint);
                     }
@@ -302,7 +297,7 @@ public class RulerItemView extends View {
     }
     public void setViewHeight(int viewHeight) {
         this.viewHeight = viewHeight;
-        ELog.e("设置高度了"+viewHeight);
+//        ELog.e("设置高度了"+viewHeight);
         postInvalidate();
     }
 }

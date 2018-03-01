@@ -18,8 +18,7 @@ import java.util.List;
 
 
 /**
- * Created by jiezhi on 4/8/16.
- * Function:
+ * Created by hdl on 1/3/18.
  */
 public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHolder> {
     private static final String TAG = "RulerAdapter";

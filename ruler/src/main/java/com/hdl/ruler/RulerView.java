@@ -17,7 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
-import com.hdl.elog.ELog;
 import com.hdl.ruler.bean.OnBarMoveListener;
 import com.hdl.ruler.bean.OnSelectedTimeListener;
 import com.hdl.ruler.bean.ScaleMode;
@@ -178,7 +177,7 @@ public class RulerView extends RecyclerView {
         windowManager.getDefaultDisplay().getMetrics(displaymetrics);
         mScreenWidth = displaymetrics.widthPixels;
         mScreenHeight = displaymetrics.heightPixels;
-        ELog.e("mScreenWidth = " + mScreenWidth);
+//        ELog.e("mScreenWidth = " + mScreenWidth);
         //中心点距离左边所占用的时长
         centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
         addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -544,8 +543,8 @@ public class RulerView extends RecyclerView {
                             onBarMoveListener.onBarMoving(currentTimeMillis);
                         }
                         currentTimeMillis += 1000;
-                        ELog.e("currentTimeMillis = " + currentTimeMillis);
-                        ELog.e("当前时间：" + DateUtils.getDateTime(currentTimeMillis));
+//                        ELog.e("currentTimeMillis = " + currentTimeMillis);
+//                        ELog.e("当前时间：" + DateUtils.getDateTime(currentTimeMillis));
                         updateCenteLinePostion();
                     }
                 });
@@ -607,14 +606,14 @@ public class RulerView extends RecyclerView {
             }
             //画左右两条选择视频的线
             selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth);
-            canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 2, selectTimeAreaDistanceLeft, CUtils.dip2px(120) - selectTimeStrokeWidth / 2, selectAreaPaint);
-            canvas.drawLine(selectTimeAreaDistanceRight, selectTimeStrokeWidth / 2, selectTimeAreaDistanceRight, CUtils.dip2px(120) - selectTimeStrokeWidth / 2, selectAreaPaint);
+            canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 2, selectTimeAreaDistanceLeft, viewHeight- CUtils.dip2px(12)*2 - selectTimeStrokeWidth / 2, selectAreaPaint);
+            canvas.drawLine(selectTimeAreaDistanceRight, selectTimeStrokeWidth / 2, selectTimeAreaDistanceRight, viewHeight- CUtils.dip2px(12)*2 - selectTimeStrokeWidth / 2, selectAreaPaint);
             //画上下两条选择视频的线1
             selectAreaPaint.setStrokeWidth(selectTimeStrokeWidth / 3);
             canvas.drawLine(selectTimeAreaDistanceLeft, selectTimeStrokeWidth / 6, selectTimeAreaDistanceRight, selectTimeStrokeWidth / 6, selectAreaPaint);
-            canvas.drawLine(selectTimeAreaDistanceLeft, CUtils.dip2px(120) - selectTimeStrokeWidth / 6, selectTimeAreaDistanceRight, CUtils.dip2px(120) - selectTimeStrokeWidth / 6, selectAreaPaint);
+            canvas.drawLine(selectTimeAreaDistanceLeft, viewHeight- CUtils.dip2px(12)*2 - selectTimeStrokeWidth / 6, selectTimeAreaDistanceRight, viewHeight- CUtils.dip2px(12)*2 - selectTimeStrokeWidth / 6, selectAreaPaint);
             //画视频区域
-            canvas.drawRect(selectTimeAreaDistanceLeft, 0, selectTimeAreaDistanceRight, CUtils.dip2px(120), vedioArea);
+            canvas.drawRect(selectTimeAreaDistanceLeft, 0, selectTimeAreaDistanceRight, viewHeight- CUtils.dip2px(12)*2, vedioArea);
             onSelectedTimeListener.onDragging(getSelectStartTime(), getSelectEndTime());
         }
     }
@@ -711,13 +710,13 @@ public class RulerView extends RecyclerView {
         centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
         postInvalidate();
         setCurrentTimeMillis(currentTimeMillis);
-        ELog.e("mScreenWidth = " + mScreenWidth);
+//        ELog.e("mScreenWidth = " + mScreenWidth);
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             viewHeight = CUtils.dip2px(75);
         } else {
             viewHeight = CUtils.dip2px(178);
         }
-        ELog.e("设置viewheight = "+viewHeight);
+//        ELog.e("设置viewheight = "+viewHeight);
         adapter.setViewHeight(viewHeight);
     }
 }
