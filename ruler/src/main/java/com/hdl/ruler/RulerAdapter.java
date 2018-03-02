@@ -1,13 +1,18 @@
 package com.hdl.ruler;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.hdl.ruler.bean.ScaleMode;
 import com.hdl.ruler.bean.TimeSlot;
@@ -25,6 +30,9 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
 
     private Context context;
     private int width;
+    private final AnimationSet animationSetRight;
+    private final AnimationSet animationSetLeft;
+//    private LinearLayout.LayoutParams leftParams, rightParams;
 
     public RulerAdapter(Context context) {
         this.context = context;
@@ -35,58 +43,89 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
         display.getSize(size);
         width = size.x;
         int height = size.y;
-        Log.v(TAG, "width:" + width + " height:" + height);
+        AlphaAnimation alphaAnimationRight = new AlphaAnimation(0, 1f);
+        TranslateAnimation translateAnimationRight = new TranslateAnimation(0, 0,
+                0, -CUtils.dip2px(3),
+                0, 0, 0, 0);
+        alphaAnimationRight.setDuration(1000);
+        alphaAnimationRight.setRepeatCount(30);
+        alphaAnimationRight.setRepeatMode(AlphaAnimation.REVERSE);
+        translateAnimationRight.setDuration(1000);
+        translateAnimationRight.setRepeatCount(30);
+        translateAnimationRight.setRepeatMode(AlphaAnimation.REVERSE);
+        animationSetRight = new AnimationSet(false);
+        animationSetRight.addAnimation(alphaAnimationRight);
+        animationSetRight.addAnimation(translateAnimationRight);
+        animationSetRight.setDuration(1000);
+        animationSetRight.setRepeatCount(30);
+
+
+        AlphaAnimation alphaAnimationLeft = new AlphaAnimation(1f, 0f);
+        TranslateAnimation translateAnimationLeft = new TranslateAnimation(0, 0,
+                0, CUtils.dip2px(3),
+                0, 0, 0, 0);
+        alphaAnimationLeft.setDuration(1000);
+        alphaAnimationLeft.setRepeatCount(30);
+        alphaAnimationLeft.setRepeatMode(AlphaAnimation.REVERSE);
+        translateAnimationLeft.setDuration(1000);
+        translateAnimationLeft.setRepeatCount(30);
+        translateAnimationLeft.setRepeatMode(AlphaAnimation.REVERSE);
+        animationSetLeft = new AnimationSet(false);
+        animationSetLeft.addAnimation(alphaAnimationRight);
+        animationSetLeft.addAnimation(translateAnimationLeft);
+        animationSetLeft.setDuration(1000);
+        animationSetLeft.setRepeatCount(30);
+
     }
 
     @Override
     public RulerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        Log.d(TAG, "RulerViewHolder");
-
-//        SimpleRulerView simpleRulerView = new SimpleRulerView(context);
-//        View view = new RulerItemView(context);
-//        view.setLayoutParams(new RecyclerView.LayoutParams(320, RecyclerView.LayoutParams.MATCH_PARENT));
-//        View view = LayoutInflater.from(context).inflate(R.layout.ruler_unit_horizontal, null);
-//        view.setLayoutParams(new RecyclerView.LayoutParams(200, RecyclerView.LayoutParams.MATCH_PARENT));
-//        tv = (TextView) view.findViewById(R.id.ruler_num);
-//        tv.setText(String.valueOf(10));
         return new RulerViewHolder(View.inflate(context, R.layout.item_ruler, null));
     }
 
     @Override
     public void onBindViewHolder(RulerViewHolder holder, int position) {
-//        ELog.e("刷新ITEM了");
         int itemWidth = (int) (320 + zoom);
+        holder.parentView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, viewHeight));
+//        if (leftParams == null) {
+//            leftParams = (LinearLayout.LayoutParams) holder.iv_tip_left.getLayoutParams();
+//        }
+//        if (rightParams == null) {
+//            rightParams = (LinearLayout.LayoutParams) holder.iv_tip_right.getLayoutParams();
+//        }
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //竖屏
+            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day);
+            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day);
+//            rightParams.bottomMargin = CUtils.dip2px(20);
+//            holder.iv_tip_left.setLayoutParams(rightParams);
+        } else {
+//            rightParams.bottomMargin = CUtils.dip2px(8);
+//            holder.iv_tip_left.setLayoutParams(rightParams);
+            //横屏
+            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day_landscape);
+            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day_landscape);
+        }
+
         holder.view.setCurTimeIndex(position - 12 * 6);
-//        if (holder.view.getScaleMode() != scaleMode) {
-//            if (scaleMode == ScaleMode.KEY_HOUSE) {//变成小时级别的时候，需要将整体宽度变窄
-////                itemWidth = (int) (320f + zoom - 100);
-//                itemWidth=50;
-//            }
         holder.view.setScaleMode(scaleMode);
         holder.view.setVedioTimeSlot(vedioTimeSlot);
-//        }
-//        if (holder.view.getScaleMode() == ScaleMode.KEY_HOUSE) {
-//            ELog.e("统一设置成25了");
-//            itemWidth = 25;
-//        }
         View view = holder.parentView;
-//        ELog.e("320 + zoom = "+(320 + zoom));
         view.setLayoutParams(new RecyclerView.LayoutParams(itemWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
         holder.view.postInvalidate();
         holder.view.setViewHeight(viewHeight);
-//        TextView tv = (TextView) holder.view.findViewById(R.id.ruler_num);
-////        ImageView imageView = (ImageView) holder.view.findViewById(R.id.ruler_img);
-//
-//        // Set blank unit for start and end ruler
-//        if (position < BLANK_FILL || position > RULER_COUNT + BLANK_FILL) {
-////            holder.view = new View(context);
-////            imageView.setMinimumWidth(width / 2);
-////            imageView.setVisibility(View.INVISIBLE);
-////            tv.setVisibility(View.GONE);
-//            tv.setText(".");
-//        } else {
-//            tv.setText(String.valueOf(((position - RULER_COUNT / 2) - BLANK_FILL - 1) * 10));
-//        }
+        if (position == (12 + 24) * 6) {//24点之后的item
+            holder.ll_next_day_tip.setVisibility(View.VISIBLE);
+            holder.ivRight.startAnimation(animationSetRight);// 给图片设置动画
+        } else {
+            holder.ll_next_day_tip.setVisibility(View.GONE);
+        }
+        if (position == 12 * 6 - 1) {//00:00之前的item
+            holder.ll_last_day_tip.setVisibility(View.VISIBLE);
+            holder.ivLeft.startAnimation(animationSetLeft);// 给图片设置动画
+        } else {
+            holder.ll_last_day_tip.setVisibility(View.GONE);
+        }
     }
 
 
@@ -123,11 +162,21 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
     class RulerViewHolder extends RecyclerView.ViewHolder {
         private RulerItemView view;
         private View parentView;
+        private LinearLayout ll_next_day_tip;
+        private LinearLayout ll_last_day_tip;
+        private ImageView ivLeft, iv_tip_left;
+        private ImageView ivRight, iv_tip_right;
 
         public RulerViewHolder(View itemView) {
             super(itemView);
             parentView = itemView;
             view = (RulerItemView) itemView.findViewById(R.id.riv_ruler_item);
+            ll_next_day_tip = (LinearLayout) itemView.findViewById(R.id.ll_next_day_tip);
+            ll_last_day_tip = (LinearLayout) itemView.findViewById(R.id.ll_last_day_tip);
+            ivLeft = (ImageView) itemView.findViewById(R.id.iv_left);
+            ivRight = (ImageView) itemView.findViewById(R.id.iv_right);
+            iv_tip_left = (ImageView) itemView.findViewById(R.id.iv_tip_left);
+            iv_tip_right = (ImageView) itemView.findViewById(R.id.iv_tip_right);
         }
     }
 
@@ -152,6 +201,10 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
     }
 
     private int viewHeight = CUtils.dip2px(178);
+    /**
+     * 当前模式
+     */
+    private int orientation = Configuration.ORIENTATION_LANDSCAPE;
 
     /**
      * 设置view的高度
@@ -159,6 +212,11 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
      * @param viewHeight
      */
     public void setViewHeight(int viewHeight) {
+        if (this.viewHeight < viewHeight) {
+            orientation = Configuration.ORIENTATION_LANDSCAPE;
+        } else {
+            orientation = Configuration.ORIENTATION_PORTRAIT;
+        }
         this.viewHeight = viewHeight;
         notifyDataSetChanged();
     }

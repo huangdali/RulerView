@@ -180,7 +180,7 @@ public class RulerView extends RecyclerView {
 //        ELog.e("mScreenWidth = " + mScreenWidth);
         //中心点距离左边所占用的时长
         centerPointDuration = (int) ((mScreenWidth / 2f) / (((320.0 + zoom) / (10 * 60 * 1000))));
-        addOnScrollListener(new RecyclerView.OnScrollListener() {
+        addOnScrollListener(new OnScrollListener() {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -498,6 +498,7 @@ public class RulerView extends RecyclerView {
     public synchronized void setCurrentTimeMillis(long currentTimeMillis) {
         this.currentTimeMillis = currentTimeMillis;
         startTimeMillis = currentTimeMillis;
+        lastTimeMillis=currentTimeMillis;
         updateCenteLinePostion();
     }
 
@@ -510,6 +511,10 @@ public class RulerView extends RecyclerView {
         leftTime = this.currentTimeMillis - centerPointDuration;
         //根据左边时间计算第一个可以显示的下标
         int leftTimeIndex = DateUtils.getHour(leftTime) * 6 + DateUtils.getMinute(leftTime) / 10 + 12 * 6;
+        if (leftTime < DateUtils.getTodayStart(currentTimeMillis)) {//跨天数了，减一天
+//            Log.e("hdltag", "updateCenteLinePostion(RulerView.java:523):跨天数了，减一天");
+            leftTimeIndex=leftTimeIndex - 24 * 6;
+        }
         //计算偏移量
         int offset = (int) (((320f + zoom) / (10 * 60 * 1000)) * DateUtils.getMinuteMillisecond(leftTime));
         //滑动到指定的item并设置偏移量(offset不能超过320px)
