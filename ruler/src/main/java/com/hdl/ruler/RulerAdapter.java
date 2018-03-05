@@ -87,25 +87,15 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
     public void onBindViewHolder(RulerViewHolder holder, int position) {
         int itemWidth = (int) (320 + zoom);
         holder.parentView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, viewHeight));
-//        if (leftParams == null) {
-//            leftParams = (LinearLayout.LayoutParams) holder.iv_tip_left.getLayoutParams();
+//        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            //竖屏
+//            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day);
+//            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day);
+//        } else {
+//            //横屏
+//            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day_landscape);
+//            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day_landscape);
 //        }
-//        if (rightParams == null) {
-//            rightParams = (LinearLayout.LayoutParams) holder.iv_tip_right.getLayoutParams();
-//        }
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            //竖屏
-            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day);
-            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day);
-//            rightParams.bottomMargin = CUtils.dip2px(20);
-//            holder.iv_tip_left.setLayoutParams(rightParams);
-        } else {
-//            rightParams.bottomMargin = CUtils.dip2px(8);
-//            holder.iv_tip_left.setLayoutParams(rightParams);
-            //横屏
-            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day_landscape);
-            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day_landscape);
-        }
 
         holder.view.setCurTimeIndex(position - 12 * 6);
         holder.view.setScaleMode(scaleMode);
@@ -115,6 +105,7 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
         holder.view.postInvalidate();
         holder.view.setViewHeight(viewHeight);
         if (position == (12 + 24) * 6) {//24点之后的item
+            holder.ll_next_day_tip.bringToFront();
             holder.ll_next_day_tip.setVisibility(View.VISIBLE);
             holder.ivRight.startAnimation(animationSetRight);// 给图片设置动画
         } else {
