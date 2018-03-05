@@ -1,7 +1,7 @@
 # TimeRuler
 
 时间轴、时间刻度尺
-- 继承至TextureView，效率更高
+- 继承至recycleview，效率更高
 - 已适配横竖屏
 - 缩放功能（分钟、小时级别）
 - 自动移动（自由决定开启与关闭移动）
@@ -18,7 +18,7 @@
 
 ![](https://github.com/huangdali/TimeRuler/blob/master/timerulers.gif)
 
-## 新增时间选择
+## 时间选择
 
 通过setSelectTimeArea(bool)就可以设置是否显示时间选择
 
@@ -56,7 +56,6 @@ app.build中使用
  ```
 
 ### 布局
-> TextureView本身不支持直接设置背景颜色（android:background="color"，设置之后会抛出异常），可以通过属性viewBackgroundColor来设置背景色
 
 最简单的使用（属性使用默认值）
 
@@ -65,22 +64,6 @@ app.build中使用
             android:id="@+id/tr_line"
             android:layout_width="match_parent"
             android:layout_height="166dp" />
-```
-
-配置属性（更多属性说明见本文附录）
-
-```java
-    <com.hdl.ruler.RulerView
-            android:id="@+id/tr_line"
-            android:layout_width="match_parent"
-            android:layout_height="166dp"
-            app:centerLineColor="#ff6e9fff"
-            app:rulerLineColor="#ffb5b5b5"
-            app:rulerTextColor="#ff444242"
-            app:vedioAreaColor="#336e9fff"
-            app:viewBackgroundColor="#fff"
-            ...
-            />
 ```
 
 ### 设置当前时间
@@ -144,27 +127,6 @@ tRuler.setOnBarMoveListener(new OnBarMoveListener() {
 ```
 
 >通过以上三个步骤即可适配横竖屏（手动与自动横竖屏都可以）
-
-
-## 附表
-
-### 布局文件属性配置说明
-> 所有属性都有默认值，可以不设置
-
-- 中轴线颜色-->centerLineColor
-- 时间文字颜色-->rulerTextColor
-- 含有录像背景颜色-->vedioAreaColor
-- 刻度线颜色-->rulerLineColor
-- 选择时间的边框颜色-->selectTimeBorderColor
-- 已选择时间颜色-->selectTimeAreaColor
-- 中轴线大小-->centerLineSize
-- 时间文字大小-->rulerTextSize
-- 小刻度线宽度-->samllRulerLineWidth
-- 小刻度线高度-->samllRulerLineHeight
-- 大刻度线宽度-->largeRulerLineWidth
-- 大刻度线高度-->largeRulerLineHeight
-- 选择时间边框大小-->selectTimeBorderSize
-- 设置背景颜色-->viewBackgroundColor
 
 ## 版本记录
 
