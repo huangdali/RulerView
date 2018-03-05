@@ -2,7 +2,6 @@ package com.hdl.ruler;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.text.TextPaint;
@@ -28,7 +27,7 @@ public class RulerItemView extends View {
      * 刻度配置
      */
     private Paint smallRulerPaint = new Paint();//小刻度画笔
-    private int rulerColor = Color.BLACK;//刻度的颜色
+    private int rulerColor = 0xffb5b5b5;//刻度的颜色
     private int rulerWidthSamll = CUtils.dip2px(0.5f);//小刻度的宽度
     private int rulerHeightSamll = CUtils.dip2px(10);//小刻度的高度
     private static final int DEFAULT_RULER_SPACE = CUtils.dip2px(12);//设置item默认间隔
@@ -176,23 +175,23 @@ public class RulerItemView extends View {
             boolean isLeftTime = DateUtils.isCurrentTimeArea(timeSlot.getStartTimeMillis(), timeIndex * 60 * 1000, timeIndex * 60 * 1000 + 10 * 60 * 1000);
             boolean isRightTime = DateUtils.isCurrentTimeArea(timeSlot.getEndTimeMillis(), timeIndex * 60 * 1000, timeIndex * 60 * 1000 + 10 * 60 * 1000);
             if (isContainTime) {//包含所有（画整个item）
-                vedioAreaRect.set(0, 0, getWidth(), viewHeight-textSize*2);
+                vedioAreaRect.set(0, 0, getWidth(), viewHeight - textSize * 2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
                 return;
             } else if (isLeftTime && isRightTime) {//两端都在（画左边时刻到右边时刻）
                 float distanceX1 = (timeSlot.getStartTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
                 float distanceX2 = (timeSlot.getEndTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
-                vedioAreaRect.set(distanceX1, 0, distanceX2, viewHeight-textSize*2);
+                vedioAreaRect.set(distanceX1, 0, distanceX2, viewHeight - textSize * 2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
                 return;
             } else if (isLeftTime) {//只有左边在（左边时刻开始到item结束都画）
                 float distanceX = (timeSlot.getStartTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
-                vedioAreaRect.set(distanceX, 0, getWidth(), viewHeight-textSize*2);
+                vedioAreaRect.set(distanceX, 0, getWidth(), viewHeight - textSize * 2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
                 return;
             } else if (isRightTime) {//只有右边在（画从头开始到右边时刻）
                 float distanceX = (timeSlot.getEndTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
-                vedioAreaRect.set(0, 0, distanceX, viewHeight-textSize*2);
+                vedioAreaRect.set(0, 0, distanceX, viewHeight - textSize * 2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
                 return;
             }
@@ -214,7 +213,7 @@ public class RulerItemView extends View {
                 //画上面的大刻度
                 canvas.drawLine(0, 0, 0, rulerHeightSamll * 2, largeRulerPaint);
                 //画下面的大刻度
-                canvas.drawLine(0, viewHeight- textSize*2 - upAndDownLineWidth, 0, viewHeight - rulerHeightSamll * 2 - textSize * 2 - upAndDownLineWidth, largeRulerPaint);
+                canvas.drawLine(0, viewHeight - textSize * 2 - upAndDownLineWidth, 0, viewHeight - rulerHeightSamll * 2 - textSize * 2 - upAndDownLineWidth, largeRulerPaint);
                 float timeStrWidth = keyTickTextPaint.measureText(DateUtils.getHourMinute(timeIndex));
 //                canvas.drawText(DateUtils.getHourMinute(timeIndex), timeStrWidth + rulerWidthSamll, viewHeight + CUtils.dip2px(14), keyTickTextPaint);
                 canvas.drawText(DateUtils.getHourMinute(timeIndex), -timeStrWidth / 2, viewHeight - textSize, keyTickTextPaint);
@@ -222,7 +221,7 @@ public class RulerItemView extends View {
                 //画上面的小刻度
                 canvas.drawLine(0, 0, 0, rulerHeightSamll, smallRulerPaint);
                 //画下面的小刻度
-                canvas.drawLine(0, viewHeight- textSize*2 - upAndDownLineWidth, 0, viewHeight - rulerHeightSamll- textSize*2 - upAndDownLineWidth, smallRulerPaint);
+                canvas.drawLine(0, viewHeight - textSize * 2 - upAndDownLineWidth, 0, viewHeight - rulerHeightSamll - textSize * 2 - upAndDownLineWidth, smallRulerPaint);
             }
         } else {
             for (int i = 0; i < 60; i++) {
@@ -242,7 +241,7 @@ public class RulerItemView extends View {
                     //画上面的小刻度
                     canvas.drawLine(rightX, 0, rightX, rulerHeightSamll, largeRulerPaint);
                     //画下面的小刻度
-                    canvas.drawLine(rightX, viewHeight - textSize*2 - upAndDownLineWidth, rightX, viewHeight - rulerHeightSamll - textSize*2 - upAndDownLineWidth, largeRulerPaint);
+                    canvas.drawLine(rightX, viewHeight - textSize * 2 - upAndDownLineWidth, rightX, viewHeight - rulerHeightSamll - textSize * 2 - upAndDownLineWidth, largeRulerPaint);
                     rightX += itemWidth;
                 }
             }
@@ -258,7 +257,7 @@ public class RulerItemView extends View {
         int viewWidth = getWidth();
         //画上下两条线
         canvas.drawLine(0, upAndDownLineWidth / 2, viewWidth, upAndDownLineWidth / 2, upAndDownLinePaint);
-        canvas.drawLine(0, viewHeight - textSize*2 - upAndDownLineWidth / 2, viewWidth, viewHeight - textSize*2 - upAndDownLineWidth / 2, upAndDownLinePaint);
+        canvas.drawLine(0, viewHeight - textSize * 2 - upAndDownLineWidth / 2, viewWidth, viewHeight - textSize * 2 - upAndDownLineWidth / 2, upAndDownLinePaint);
     }
 
     /**
@@ -295,6 +294,7 @@ public class RulerItemView extends View {
         this.vedioTimeSlot.addAll(vedioTimeSlot);
         postInvalidate();//重绘
     }
+
     public void setViewHeight(int viewHeight) {
         this.viewHeight = viewHeight;
 //        ELog.e("设置高度了"+viewHeight);
