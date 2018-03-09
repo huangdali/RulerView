@@ -30,7 +30,7 @@
 app.build中使用
 
 ```java
-    compile 'com.jwkj:TimeLineView:v2.1.0'
+    compile 'com.jwkj:TimeLineView:v2.1.1'
 ```
 
 ### 混淆配置
@@ -131,6 +131,10 @@ tRuler.setOnBarMoveListener(new OnBarMoveListener() {
 ## 版本记录
 
 ### 2.X版本
+
+v2.1.1( [2018.03.09]() )
+
+- 【修复】画有间断的视频区域可能时间不对应问题
 
 v2.1.0( [2018.03.05]() )
 

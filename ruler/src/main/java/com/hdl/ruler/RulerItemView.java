@@ -177,23 +177,23 @@ public class RulerItemView extends View {
             if (isContainTime) {//包含所有（画整个item）
                 vedioAreaRect.set(0, 0, getWidth(), viewHeight - textSize * 2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
-                return;
+//                return;
             } else if (isLeftTime && isRightTime) {//两端都在（画左边时刻到右边时刻）
                 float distanceX1 = (timeSlot.getStartTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
                 float distanceX2 = (timeSlot.getEndTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
                 vedioAreaRect.set(distanceX1, 0, distanceX2, viewHeight - textSize * 2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
-                return;
+//                return;
             } else if (isLeftTime) {//只有左边在（左边时刻开始到item结束都画）
                 float distanceX = (timeSlot.getStartTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
                 vedioAreaRect.set(distanceX, 0, getWidth(), viewHeight - textSize * 2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
-                return;
+//                return;
             } else if (isRightTime) {//只有右边在（画从头开始到右边时刻）
                 float distanceX = (timeSlot.getEndTimeMillis() - timeIndex * 60 * 1000) * (getWidth() / (10 * 60 * 1000f));
                 vedioAreaRect.set(0, 0, distanceX, viewHeight - textSize * 2);
                 canvas.drawRect(vedioAreaRect, vedioAreaPaint);
-                return;
+//                return;
             }
         }
     }
