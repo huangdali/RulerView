@@ -217,9 +217,9 @@ public class RulerView extends RecyclerView {
                         }
                         setCurrentTimeMillis(DateUtils.getTodayStart(startTimeMillis));
                         toTodayStartPostion();
-                        if (onBarMoveListener != null) {
-                            onBarMoveListener.onBarMoveFinish(DateUtils.getTodayStart(startTimeMillis));
-                        }
+//                        if (onBarMoveListener != null) {
+//                            onBarMoveListener.onBarMoveFinish(DateUtils.getTodayStart(startTimeMillis));
+//                        }
 
                     } else if (currentTimeMillis > DateUtils.getTodayEnd(startTimeMillis)) {
                         //下一天了
@@ -228,9 +228,9 @@ public class RulerView extends RecyclerView {
                         }
                         setCurrentTimeMillis(DateUtils.getTodayEnd(startTimeMillis));
                         toTodayEndPostion();
-                        if (onBarMoveListener != null) {
-                            onBarMoveListener.onBarMoveFinish(DateUtils.getTodayEnd(startTimeMillis));
-                        }
+//                        if (onBarMoveListener != null) {
+//                            onBarMoveListener.onBarMoveFinish(DateUtils.getTodayEnd(startTimeMillis));
+//                        }
                     } else {
                         //当天
                         if (onBarMoveListener != null) {

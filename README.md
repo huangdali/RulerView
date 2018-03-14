@@ -132,6 +132,11 @@ tRuler.setOnBarMoveListener(new OnBarMoveListener() {
 
 ### 2.X版本
 
+
+v2.1.2( [2018.03.14]() )
+
+- 【优化】天数切换时，不再回调onBarMoveFinished();
+
 v2.1.1( [2018.03.09]() )
 
 - 【修复】画有间断的视频区域可能时间不对应问题
