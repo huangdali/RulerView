@@ -704,6 +704,13 @@ public class RulerView extends RecyclerView {
     }
 
     private int viewHeight = CUtils.dip2px(178);
+    /**
+     * 设置方向
+     * @param newConfig
+     */
+    public void setOrientation(Configuration newConfig){
+        onConfigurationChanged(newConfig);
+    }
 
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
