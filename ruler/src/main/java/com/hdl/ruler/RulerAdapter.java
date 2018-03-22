@@ -87,15 +87,15 @@ public class RulerAdapter extends RecyclerView.Adapter<RulerAdapter.RulerViewHol
     public void onBindViewHolder(RulerViewHolder holder, int position) {
         int itemWidth = (int) (320 + zoom);
         holder.parentView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, viewHeight));
-//        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            //竖屏
-//            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day);
-//            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day);
-//        } else {
-//            //横屏
-//            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day_landscape);
-//            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day_landscape);
-//        }
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //竖屏
+            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day);
+            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day);
+        } else {
+            //横屏
+            holder.iv_tip_left.setImageResource(R.mipmap.ic_last_day_landscape);
+            holder.iv_tip_right.setImageResource(R.mipmap.ic_next_day_landscape);
+        }
 
         holder.view.setCurTimeIndex(position - 12 * 6);
         holder.view.setScaleMode(scaleMode);

@@ -24,7 +24,6 @@
             android:layout_width="12dp"
             android:layout_height="12dp"
             android:layout_gravity="center_vertical"
-
             android:layout_marginLeft="10dp"
             android:src="@mipmap/ic_drag_left" />
 
@@ -33,7 +32,6 @@
             android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginBottom="8dp"
             android:src="@mipmap/ic_next_day" />
     </LinearLayout>
     <!--此处必须设置android:gravity="right"才行-->
@@ -51,7 +49,6 @@
             android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginBottom="8dp"
             android:src="@mipmap/ic_last_day" />
 
         <ImageView

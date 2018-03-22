@@ -29,8 +29,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignRight="@+id/iv_left"
+            android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
-            android:layout_marginTop="44dp"
             android:src="@mipmap/ic_last_day" />
 
         <ImageView
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/iv_right"
             android:layout_marginLeft="10dp"
-            android:layout_marginTop="44dp"
+            android:layout_centerVertical="true"
             android:src="@mipmap/ic_next_day" />
 
         <ImageView

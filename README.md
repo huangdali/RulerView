@@ -30,7 +30,7 @@
 app.build中使用
 
 ```java
-    compile 'com.jwkj:TimeLineView:v2.1.3'
+    compile 'com.jwkj:TimeLineView:v2.1.4'
 ```
 
 ### 混淆配置
@@ -132,6 +132,10 @@ tRuler.setOnBarMoveListener(new OnBarMoveListener() {
 
 ### 2.X版本
 
+
+v2.1.4( [2018.03.22]() )
+
+- 【修复】部分机型横竖屏切换提示图片不对问题
 
 v2.1.3( [2018.03.21]() )
 

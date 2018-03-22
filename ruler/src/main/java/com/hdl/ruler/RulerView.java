@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -715,6 +716,7 @@ public class RulerView extends RecyclerView {
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        Log.e("hdltag", "onConfigurationChanged(RulerView.java:719):------------------横竖屏切换了-----------------" );
         int temp = mScreenHeight;
         mScreenHeight = mScreenWidth;
         mScreenWidth = temp;
