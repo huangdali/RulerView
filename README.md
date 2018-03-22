@@ -30,7 +30,7 @@
 app.build中使用
 
 ```java
-    compile 'com.jwkj:TimeLineView:v2.1.4'
+    compile 'com.jwkj:TimeLineView:v2.1.5'
 ```
 
 ### 混淆配置
@@ -132,6 +132,10 @@ tRuler.setOnBarMoveListener(new OnBarMoveListener() {
 
 ### 2.X版本
 
+
+v2.1.5( [2018.03.22]() )
+
+- 【修复】最小刻度选择时间时时间不对应问题
 
 v2.1.4( [2018.03.22]() )
 

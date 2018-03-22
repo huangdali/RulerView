@@ -669,6 +669,7 @@ public class RulerView extends RecyclerView {
      * @param selectTimeArea
      */
     public void setSelectTimeArea(boolean selectTimeArea) {
+        lastTimeMillis=getCurrentTimeMillis();
         this.isSelectTimeArea = selectTimeArea;
         if (selectTimeArea) {//选择的时候需要停止选择
             if (scaleMode == ScaleMode.KEY_HOUSE) {
